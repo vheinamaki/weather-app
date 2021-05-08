@@ -1,9 +1,15 @@
 package fi.tuni.genericweatherapp
 
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Log
+import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import kotlinx.android.parcel.Parceler
+import kotlinx.android.parcel.Parcelize
+import kotlinx.android.parcel.TypeParceler
 import java.net.URL
 import java.net.URLEncoder
 import java.util.*
@@ -16,53 +22,94 @@ class OpenWeatherMap(
 ) {
     private val mapper = jacksonObjectMapper()
 
-    abstract class Weather {
-        var conditionCode: Int = 0
-        lateinit var title: String
-        lateinit var description: String
-        lateinit var icon: String
-        lateinit var time: Date
 
-        @JsonProperty("weather")
-        fun unpackWeather(weathers: Array<Map<String, String>>) {
-            conditionCode = weathers[0]["id"]!!.toInt()
-            title = weathers[0]["main"]!!
-            description = weathers[0]["description"]!!
-            icon = weathers[0]["icon"]!!
-        }
-
-        @JsonProperty("dt")
-        fun convertTime(dt: Long) {
-            // OpenWeatherMap dt property is in seconds, Java Date in millis
-            time = Date(dt * 1000)
-        }
-    }
-
+    // Data model classes are parcelable and can be parsed by jackson
+    // Parcelable constructor
+    @Parcelize
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Hourly(
+        var conditionCode: Int,
+        var title: String,
+        var description: String,
+        var icon: String,
+        var time: Date,
         var temp: Double,
-        @JsonProperty("feels_like")
         var feelsLike: Double,
         var pressure: Int,
         var humidity: Int,
-        @JsonProperty("wind_speed")
         var windSpeed: Double,
-        @JsonProperty("wind_deg")
         var windDeg: Double
-    ) : Weather()
+    ) : Parcelable {
 
+        // Jackson constructor
+        @JsonCreator
+        constructor(
+            @JsonProperty("weather") weathers: Array<Map<String, String>>,
+            @JsonProperty dt: Long,
+            @JsonProperty temp: Double,
+            @JsonProperty("feels_like") feelsLike: Double,
+            @JsonProperty pressure: Int,
+            @JsonProperty humidity: Int,
+            @JsonProperty("wind_speed") windSpeed: Double,
+            @JsonProperty("wind_deg") windDeg: Double
+        ) : this(
+            weathers[0]["id"]!!.toInt(),
+            weathers[0]["main"]!!,
+            weathers[0]["description"]!!,
+            weathers[0]["icon"]!!,
+            Date(dt * 1000),
+            temp,
+            feelsLike,
+            pressure,
+            humidity,
+            windSpeed,
+            windDeg
+        )
+    }
+
+    // Parcelable constructor
+    @Parcelize
+    @TypeParceler<DayTemps, DayTempsParceler>()
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Daily(
+        var conditionCode: Int,
+        var title: String,
+        var description: String,
+        var icon: String,
+        var time: Date,
         var temp: DayTemps,
-        @JsonProperty("feels_like")
         var feelsLike: DayTemps,
         var pressure: Int,
         var humidity: Int,
-        @JsonProperty("wind_speed")
         var windSpeed: Double,
-        @JsonProperty("wind_deg")
         var windDeg: Double
-    ) : Weather()
+    ) : Parcelable {
+
+        // Jackson constructor
+        @JsonCreator
+        constructor(
+            @JsonProperty("weather") weathers: Array<Map<String, String>>,
+            @JsonProperty dt: Long,
+            @JsonProperty temp: DayTemps,
+            @JsonProperty("feels_like") feelsLike: DayTemps,
+            @JsonProperty pressure: Int,
+            @JsonProperty humidity: Int,
+            @JsonProperty("wind_speed") windSpeed: Double,
+            @JsonProperty("wind_deg") windDeg: Double
+        ) : this(
+            weathers[0]["id"]!!.toInt(),
+            weathers[0]["main"]!!,
+            weathers[0]["description"]!!,
+            weathers[0]["icon"]!!,
+            Date(dt * 1000),
+            temp,
+            feelsLike,
+            pressure,
+            humidity,
+            windSpeed,
+            windDeg
+        )
+    }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class DayTemps(
@@ -73,6 +120,23 @@ class OpenWeatherMap(
         var evening: Double,
         var night: Double
     )
+
+    object DayTempsParceler : Parceler<DayTemps> {
+        override fun create(parcel: Parcel) = DayTemps(
+            parcel.readDouble(),
+            parcel.readDouble(),
+            parcel.readDouble(),
+            parcel.readDouble()
+        )
+
+        override fun DayTemps.write(parcel: Parcel, flags: Int) {
+            parcel.writeDouble(morning)
+            parcel.writeDouble(day)
+            parcel.writeDouble(evening)
+            parcel.writeDouble(night)
+        }
+    }
+
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class RootObject(
