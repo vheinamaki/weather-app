@@ -153,9 +153,15 @@ class OpenWeatherMap(
         val name: String,
         val lat: Double,
         val lon: Double,
-        val country: String,
-        val state: String?
-    )
+        val country: String
+    ) {
+        constructor(dbLoc: DBLocation) : this(
+            dbLoc.name,
+            dbLoc.latitude,
+            dbLoc.longitude,
+            dbLoc.country
+        )
+    }
 
     fun fetchWeather(latitude: Double, longitude: Double): RootObject {
         val url =
@@ -165,7 +171,6 @@ class OpenWeatherMap(
 
     fun fetchCoordinates(locationName: String): Array<Location> {
         val sanitized = URLEncoder.encode(locationName, "UTF-8")
-        Log.d("weatherDebug", sanitized)
         val url = URL("$apiUrl/geo/1.0/direct?q=$sanitized&appid=$apiKey")
         return mapper.readValue(url, Array<Location>::class.java)
     }

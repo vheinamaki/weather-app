@@ -7,21 +7,8 @@
 
         <menu>
             <item
-                android:id="@+id/navAddLocation"
-                android:background="@color/colorAccent"
-                android:title="Add Location" />
-            <item
-                android:id="@+id/navCurrentLocation"
-                android:title="Current Location (Tampere)" />
-            <item
-                android:id="@+id/navUserLocation0"
-                android:title="Tampere" />
-            <item
-                android:id="@+id/navUserLocation1"
-                android:title="Oulu" />
-            <item
-                android:id="@+id/navUserLocation2"
-                android:title="Helsinki" />
+                android:id="@+id/navManageLocations"
+                android:title="Manage Locations" />
         </menu>
     </item>
 

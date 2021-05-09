@@ -1,9 +1,15 @@
 package fi.tuni.genericweatherapp
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.preference.PreferenceManager
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
 import android.widget.TextView
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.os.bundleOf
@@ -25,6 +31,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var drawerLayout: DrawerLayout
     lateinit var navigationView: NavigationView
     lateinit var toolbar: Toolbar
+    lateinit var changeLocation: ActivityResultLauncher<Intent>
 
     enum class PhotoCollection(val id: String) {
         RAIN("hlfvh66"),
@@ -37,12 +44,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState == null) {
-            supportFragmentManager.commit {
-                setReorderingAllowed(true)
-                add(R.id.fragmentContainerView, WeatherFragment::class.java, null)
-            }
-        }
+
         setContentView(R.layout.activity_main)
         drawerLayout = findViewById(R.id.drawerLayout)
         navigationView = findViewById(R.id.navigationView)
@@ -53,15 +55,38 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
+        toolbar.title = "Tampere"
+        requestWeatherAsync(61.4991, 23.7871)
+
+        changeLocation =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                if (it.resultCode == Activity.RESULT_OK) {
+                    val bundle = it.data?.extras
+                    if (bundle != null) {
+                        toolbar.title = bundle.getString("locationName")
+                        val lat = bundle.getDouble("latitude")
+                        val lon = bundle.getDouble("longitude")
+                        requestWeatherAsync(lat, lon)
+                    }
+                }
+            }
+    }
+
+    fun requestLocationTitleAsync(latitude: Double, longitude: Double) {
         thread {
             val weather = OpenWeatherMap(owmKey)
-            val results = weather.fetchWeather(61.4991, 23.7871)
-            val locationName = weather.fetchLocationName(61.4991, 23.7871)
-            Log.d("weatherDebug", locationName)
-            Log.d("weatherDebug", results.current.title)
-            Log.d("weatherDebug", results.current.temp.toString())
+            val locationName = weather.fetchLocationName(latitude, longitude)
             runOnUiThread {
                 toolbar.title = locationName
+            }
+        }
+    }
+
+    fun requestWeatherAsync(latitude: Double, longitude: Double) {
+        thread {
+            val weather = OpenWeatherMap(owmKey)
+            val results = weather.fetchWeather(latitude, longitude)
+            runOnUiThread {
                 supportFragmentManager.setFragmentResult(
                     "weatherData",
                     bundleOf(
@@ -74,27 +99,29 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            drawerLayout.openDrawer(GravityCompat.START)
-            return true
+        when (item.itemId) {
+            android.R.id.home -> {
+                drawerLayout.openDrawer(GravityCompat.START)
+                return true
+            }
+            R.id.toolbarAddLocation -> {
+                val intent = Intent(this, AddLocationActivity::class.java)
+                startActivity(intent)
+            }
         }
         return super.onOptionsItemSelected(item)
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
-            R.id.navAddLocation -> {
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(R.id.fragmentContainerView, LocationsFragment::class.java, null)
-                }
-            }
-            R.id.navCurrentLocation -> {
-                supportFragmentManager.commit {
-                    setReorderingAllowed(true)
-                    replace(R.id.fragmentContainerView, WeatherFragment::class.java, null)
-                }
+            R.id.navManageLocations -> {
+                changeLocation.launch(Intent(this, LocationsActivity::class.java))
             }
         }
         drawerLayout.closeDrawer(GravityCompat.START)
