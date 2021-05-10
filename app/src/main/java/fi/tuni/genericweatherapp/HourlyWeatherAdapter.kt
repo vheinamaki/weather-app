@@ -16,7 +16,7 @@ class HourlyWeatherAdapter(private val data: ArrayList<OpenWeatherMap.Hourly>) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyWeatherHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.weather_hourly, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_weather_hourly, parent, false)
         return HourlyWeatherHolder(view)
     }
 

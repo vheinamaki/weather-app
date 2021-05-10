@@ -1,5 +1,9 @@
 <resources>
     <string name="app_name">Generic Weather App</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="loading">Loading…</string>
+    <string name="locations">Locations</string>
+    <string name="manage_locations">Manage Locations</string>
+    <string name="settings">Settings</string>
+    <string name="about">About</string>
+    <string name="locationsearch_hint">Enter Location name</string>
 </resources>

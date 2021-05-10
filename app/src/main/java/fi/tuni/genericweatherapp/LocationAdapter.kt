@@ -3,7 +3,6 @@ package fi.tuni.genericweatherapp
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -18,7 +17,7 @@ class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) : Re
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.location, parent, false)
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false)
         return LocationHolder(view)
     }
 

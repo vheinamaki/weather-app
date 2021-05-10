@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:iconifiedByDefault="false"
-        app:queryHint="Enter Location name"/>
+        app:queryHint="@string/locationsearch_hint"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/searchRecyclerView"

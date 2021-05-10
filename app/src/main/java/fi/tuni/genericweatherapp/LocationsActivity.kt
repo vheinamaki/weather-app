@@ -16,8 +16,6 @@ class LocationsActivity : AppCompatActivity() {
     lateinit var recyclerView: RecyclerView
     private var adapter = LocationAdapter(ArrayList())
 
-    val dao = LocationDatabase.getInstance(this).locationDao()
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_locations)
@@ -42,6 +40,8 @@ class LocationsActivity : AppCompatActivity() {
             setResult(Activity.RESULT_OK, returnIntent)
             finish()
         }
+
+        val dao = LocationDatabase.getInstance(this).locationDao()
 
         thread {
             val locations = dao.getAll()

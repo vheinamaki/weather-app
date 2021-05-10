@@ -3,20 +3,20 @@
 
     <item
         android:id="@+id/navLocations"
-        android:title="Locations">
+        android:title="@string/locations">
 
         <menu>
             <item
                 android:id="@+id/navManageLocations"
-                android:title="Manage Locations" />
+                android:title="@string/manage_locations" />
         </menu>
     </item>
 
     <item
         android:id="@+id/navSettings"
-        android:title="Settings" />
+        android:title="@string/settings" />
 
     <item
         android:id="@+id/navAbout"
-        android:title="About" />
+        android:title="@string/about" />
 </menu>
