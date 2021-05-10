@@ -7,6 +7,8 @@ import android.graphics.BitmapFactory
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import android.preference.PreferenceManager
+import android.text.method.LinkMovementMethod
+import android.text.util.Linkify
 import android.util.Log
 import android.view.Gravity
 import android.view.Menu
@@ -24,6 +26,7 @@ import androidx.fragment.app.commit
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.navigation.NavigationView
+import kotlinx.android.synthetic.main.weather.*
 import java.net.HttpURLConnection
 import java.net.URL
 import java.text.DateFormat
@@ -51,6 +54,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private val adapter = HourlyWeatherAdapter(ArrayList())
     lateinit var textTemperature: TextView
     lateinit var textDescription: TextView
+    lateinit var textPhotographer: TextView
+    lateinit var textPhotoLink: TextView
     lateinit var recyclerView: RecyclerView
 
     enum class WeatherType(val photoCollection: String) {
@@ -63,7 +68,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     fun getWeatherType(conditionCode: Int): WeatherType {
-        return when(conditionCode) {
+        return when (conditionCode) {
             in 200..299 -> WeatherType.STORM
             in 300..599 -> WeatherType.RAIN
             in 600..699 -> WeatherType.SNOW
@@ -89,6 +94,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         textTemperature = findViewById(R.id.tempTextView)
         textDescription = findViewById(R.id.descriptionTextView)
+        textPhotographer = findViewById(R.id.photographerTextView)
+        textPhotoLink = findViewById(R.id.linkTextView)
         recyclerView = findViewById(R.id.recyclerView)
         imageView = findViewById(R.id.imageView)
 
@@ -139,6 +146,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             runOnUiThread {
                 imageView.setImageDrawable(bgImage)
+                textPhotographer.text = resources.getString(
+                    R.string.photographer_credit,
+                    photo.photographer
+                )
+                linkTextView.text = photo.pageUrl
                 // TODO: Also allow K and °F
                 textTemperature.text = String.format("%.1f\u00B0C", results.current.temp)
                 textDescription.text = results.current.description
