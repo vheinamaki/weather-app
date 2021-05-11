@@ -7,7 +7,11 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
-class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) : RecyclerView.Adapter<LocationAdapter.LocationHolder>() {
+/**
+ * RecyclerView adapter for locations listed in the location search list
+ */
+class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) :
+    RecyclerView.Adapter<LocationAdapter.LocationHolder>() {
     var locationClickedListener: ((OpenWeatherMap.Location) -> Unit)? = null
 
     class LocationHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -17,11 +21,13 @@ class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) : Re
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false)
         return LocationHolder(view)
     }
 
     override fun onBindViewHolder(holder: LocationHolder, position: Int) {
+        // Add click listener for the item
         holder.item.setOnClickListener {
             locationClicked(data[position])
         }
@@ -33,11 +39,6 @@ class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) : Re
 
     fun add(location: OpenWeatherMap.Location) {
         data.add(location)
-        notifyDataSetChanged()
-    }
-
-    fun remove(location: OpenWeatherMap.Location) {
-        data.remove(location)
         notifyDataSetChanged()
     }
 

@@ -1,8 +1,10 @@
 package fi.tuni.genericweatherapp
 
 import android.content.Context
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
+// Database table for user-saved locations
 @Entity(tableName = "locations")
 data class DBLocation(
     @PrimaryKey(autoGenerate = true) val uid: Int,
@@ -20,10 +22,11 @@ data class DBLocation(
     )
 }
 
+// Data Access Object for querying the locations table
 @Dao
 interface DBLocationDao {
     @Query("SELECT * FROM locations")
-    fun getAll(): List<DBLocation>
+    fun getAll(): LiveData<List<DBLocation>>
 
     @Insert
     fun insertAll(vararg locs: DBLocation)
@@ -32,7 +35,8 @@ interface DBLocationDao {
     fun delete(loc: DBLocation)
 }
 
-@Database(entities = arrayOf(DBLocation::class), version = 1)
+// The database itself, with a singleton instance to access it
+@Database(entities = [DBLocation::class], version = 1)
 abstract class LocationDatabase : RoomDatabase() {
     abstract fun locationDao(): DBLocationDao
 

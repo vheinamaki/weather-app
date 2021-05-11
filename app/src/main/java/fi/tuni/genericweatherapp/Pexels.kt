@@ -7,6 +7,9 @@ import java.io.BufferedInputStream
 import java.net.HttpURLConnection
 import java.net.URL
 
+/**
+ * Helper class for making HTTP requests to the Pexels API
+ */
 class Pexels(var apiKey: String, var apiUrl: String = "https://api.pexels.com/v1") {
     private val mapper = jacksonObjectMapper()
 
@@ -29,6 +32,7 @@ class Pexels(var apiKey: String, var apiUrl: String = "https://api.pexels.com/v1
         var media: Array<Photo>
     )
 
+    // Fetch a photo collection with its ID
     fun fetchCollectionMedia(id: String): Array<Photo> {
         val url = URL("$apiUrl/collections/$id?type=photo")
         val urlConnection = url.openConnection() as HttpURLConnection

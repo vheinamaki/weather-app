@@ -14,6 +14,9 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.*
 
+/**
+ * Helper class for making HTTP requests to the OpenWeatherMap API
+ */
 class OpenWeatherMap(
     var apiKey: String,
     var units: String = "metric",
@@ -163,18 +166,24 @@ class OpenWeatherMap(
         )
     }
 
+    // Get weather information from the OneCall API
     fun fetchWeather(latitude: Double, longitude: Double): RootObject {
         val url =
             URL("$apiUrl/data/2.5/onecall?lat=$latitude&lon=$longitude&exclude=minutely&lang=$language&units=$units&appid=$apiKey")
         return mapper.readValue(url, RootObject::class.java)
     }
 
+    // Get location information (coordinates, country code) from the geocoding API
+    // Used for "Add Location" search functionality
     fun fetchCoordinates(locationName: String): Array<Location> {
         val sanitized = URLEncoder.encode(locationName, "UTF-8")
         val url = URL("$apiUrl/geo/1.0/direct?q=$sanitized&appid=$apiKey")
         return mapper.readValue(url, Array<Location>::class.java)
     }
 
+    // Get location name with coordinates from the reverse geocoding API
+    // Used to get name for location when using GPS coordinates, as the OneCall API does not give
+    // the location name in its results.
     fun fetchLocationName(latitude: Double, longitude: Double): String {
         val url = URL("$apiUrl/geo/1.0/reverse?lat=$latitude&lon=$longitude&appid=$apiKey")
         return mapper.readValue(url, Array<Location>::class.java)[0].name

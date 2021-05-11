@@ -7,7 +7,11 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import java.text.DateFormat
 
-class HourlyWeatherAdapter(private val data: ArrayList<OpenWeatherMap.Hourly>) : RecyclerView.Adapter<HourlyWeatherAdapter.HourlyWeatherHolder>() {
+/**
+ * RecyclerView adapter for Hourly weather forecast items
+ */
+class HourlyWeatherAdapter(private val data: ArrayList<OpenWeatherMap.Hourly>) :
+    RecyclerView.Adapter<HourlyWeatherAdapter.HourlyWeatherHolder>() {
     val formatter = DateFormat.getTimeInstance(DateFormat.SHORT)
 
     class HourlyWeatherHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -16,7 +20,8 @@ class HourlyWeatherAdapter(private val data: ArrayList<OpenWeatherMap.Hourly>) :
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): HourlyWeatherHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_weather_hourly, parent, false)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_weather_hourly, parent, false)
         return HourlyWeatherHolder(view)
     }
 
@@ -27,9 +32,8 @@ class HourlyWeatherAdapter(private val data: ArrayList<OpenWeatherMap.Hourly>) :
 
     override fun getItemCount() = data.size
 
-    // Add persons to list
-    fun add(person: OpenWeatherMap.Hourly) {
-        data.add(person)
+    fun add(hourlyWeather: OpenWeatherMap.Hourly) {
+        data.add(hourlyWeather)
         notifyDataSetChanged()
     }
 }
