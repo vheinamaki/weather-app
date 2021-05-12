@@ -32,8 +32,22 @@ class HourlyWeatherAdapter(private val data: ArrayList<OpenWeatherMap.Hourly>) :
 
     override fun getItemCount() = data.size
 
+    // Add an item to the data set
     fun add(hourlyWeather: OpenWeatherMap.Hourly) {
         data.add(hourlyWeather)
+        notifyDataSetChanged()
+    }
+
+    // Clear the data set
+    fun clear() {
+        data.clear()
+        notifyDataSetChanged()
+    }
+
+    // Replace the data set
+    fun setItems(items: List<OpenWeatherMap.Hourly>) {
+        data.clear()
+        data.addAll(items)
         notifyDataSetChanged()
     }
 }

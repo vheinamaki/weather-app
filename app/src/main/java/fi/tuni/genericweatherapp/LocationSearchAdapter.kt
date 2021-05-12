@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 /**
  * RecyclerView adapter for locations listed in the location search list
  */
-class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) :
-    RecyclerView.Adapter<LocationAdapter.LocationHolder>() {
+class LocationSearchAdapter(private val data: ArrayList<OpenWeatherMap.Location>) :
+    RecyclerView.Adapter<LocationSearchAdapter.LocationHolder>() {
     var locationClickedListener: ((OpenWeatherMap.Location) -> Unit)? = null
 
     class LocationHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -22,7 +22,7 @@ class LocationAdapter(private val data: ArrayList<OpenWeatherMap.Location>) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
         val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_location, parent, false)
+            LayoutInflater.from(parent.context).inflate(R.layout.item_location_searched, parent, false)
         return LocationHolder(view)
     }
 
