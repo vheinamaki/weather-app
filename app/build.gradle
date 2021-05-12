@@ -80,4 +80,7 @@ dependencies {
     // Hilt dependency injection library
     implementation "com.google.dagger:hilt-android:$hilt_version"
     kapt "com.google.dagger:hilt-compiler:$hilt_version"
+
+    // Fused location provider
+    implementation 'com.google.android.gms:play-services-location:18.0.0'
 }

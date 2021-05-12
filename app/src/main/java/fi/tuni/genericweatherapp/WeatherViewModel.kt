@@ -15,14 +15,7 @@ import javax.inject.Inject
 @HiltViewModel
 class WeatherViewModel @Inject constructor(private val repository: WeatherRepository) :
     ViewModel() {
-    // Initialize property as a lazy delegate, callback is only executed when accessing the
-    // property for the first time, after that the returned value is used directly
-    private val liveWeather: MutableLiveData<WeatherRepository.WeatherPacket> by lazy {
-        MutableLiveData<WeatherRepository.WeatherPacket>().also {
-            // Call loadWeather when liveWeather property is accessed for the first time
-            loadWeather()
-        }
-    }
+    private val liveWeather = MutableLiveData<WeatherRepository.WeatherPacket>()
 
     // TODO: Use to implement loading state
     private val loading = MutableLiveData<Boolean>()
@@ -43,7 +36,7 @@ class WeatherViewModel @Inject constructor(private val repository: WeatherReposi
     }
 
     // Forward location change request to WeatherRepository and then update
-    fun requestLocationChange(latitude: Double, longitude: Double) {
+    fun requestForecast(latitude: Double, longitude: Double) {
         repository.changeLocation(latitude, longitude)
         loadWeather()
     }

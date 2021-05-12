@@ -1,9 +1,14 @@
 package fi.tuni.genericweatherapp
 
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.drawable.BitmapDrawable
+import android.location.Location
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -13,10 +18,12 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.weather.*
@@ -85,9 +92,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             textDescription.text = data.weather.current.description
             // Insert forecast for the next 12 hours into the recyclerView via adapter
             val hourly = data.weather.hourly
-            hourly.take(12).forEach {
-                adapter.add(it)
-            }
+            adapter.setItems(hourly.take(12))
         }
 
         // Configure recyclerView's scroll direction and adapter to use
@@ -95,8 +100,45 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
-        // TODO: Replace with GPS location
-        model.requestLocationChange(61.4991, 23.7871)
+        // Get current location with Fused
+        val fusedClient = LocationServices.getFusedLocationProviderClient(this)
+        val perm = Manifest.permission.ACCESS_FINE_LOCATION
+        val alreadyGranted = ContextCompat.checkSelfPermission(this, perm) == PERMISSION_GRANTED
+
+        val request = LocationRequest.create()
+        request.interval = 5000
+        request.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+        val callback = object : LocationCallback() {
+            override fun onLocationResult(result: LocationResult) {
+                val loc = result.lastLocation
+                Log.d("weatherDebug", loc.toString())
+                // Request weather for the received coordinates
+                model.requestForecast(loc.latitude, loc.longitude)
+                // Only one location needed for now
+                fusedClient.removeLocationUpdates(this)
+            }
+        }
+
+        // Check location usage permissions
+        if (alreadyGranted) {
+            // Permission has already been granted, register callback
+            fusedClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
+            // fusedClient.lastLocation.addOnSuccessListener(locationListener)
+        } else {
+            // Ask for permission
+            registerForActivityResult(
+                ActivityResultContracts.RequestPermission()
+            ) { granted ->
+                if (granted) {
+                    // Permission granted, register callback
+                    fusedClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
+                    // fusedClient.lastLocation.addOnSuccessListener(locationListener)
+                } else {
+                    // Rejected
+                    Log.d("weatherDebug", "Location permission rejected")
+                }
+            }.launch(perm)
+        }
 
         // Configure the activity launcher result callback
         changeLocation =
@@ -110,7 +152,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                         val lat = bundle.getDouble("latitude")
                         val lon = bundle.getDouble("longitude")
                         // Request the ViewModel to update the current location
-                        model.requestLocationChange(lat, lon)
+                        model.requestForecast(lat, lon)
                     }
                 }
             }

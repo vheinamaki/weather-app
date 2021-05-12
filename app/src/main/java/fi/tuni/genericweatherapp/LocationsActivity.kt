@@ -1,18 +1,18 @@
 package fi.tuni.genericweatherapp
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
-import androidx.activity.viewModels
+import android.view.View
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.weather.*
 import kotlin.concurrent.thread
 
 /**
@@ -22,7 +22,7 @@ import kotlin.concurrent.thread
 class LocationsActivity : AppCompatActivity() {
     lateinit var toolbar: Toolbar
     lateinit var recyclerView: RecyclerView
-    private var adapter = LocationAdapter(ArrayList())
+    private var adapter = SavedLocationAdapter(ArrayList())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,8 +46,8 @@ class LocationsActivity : AppCompatActivity() {
         adapter.locationClickedListener = {
             val returnIntent = Intent()
             returnIntent.putExtra("locationName", it.name)
-            returnIntent.putExtra("latitude", it.lat)
-            returnIntent.putExtra("longitude", it.lon)
+            returnIntent.putExtra("latitude", it.latitude)
+            returnIntent.putExtra("longitude", it.longitude)
             setResult(Activity.RESULT_OK, returnIntent)
             finish()
         }
@@ -55,10 +55,29 @@ class LocationsActivity : AppCompatActivity() {
         // Data access object for querying the database
         val dao = LocationDatabase.getInstance(applicationContext).locationDao()
 
+        adapter.deleteButtonClickedListener = {
+            AlertDialog.Builder(this)
+                .setTitle(R.string.confirm_delete_title)
+                .setMessage(resources.getString(R.string.confirm_delete_description, it.name))
+                .setNegativeButton(R.string.confirm_delete_cancel) {
+                    dialog, _ ->
+                    dialog.dismiss()
+                }
+                .setPositiveButton(R.string.confirm_delete_ok) {
+                    dialog, _ ->
+                    dialog.dismiss()
+                    thread {
+                        dao.delete(it)
+                    }
+                }
+                .show()
+        }
+
         // Listen for changes in the database, update listed locations in recyclerView
         dao.getAll().observe(this) { locations ->
+            adapter.clear()
             locations.forEach {
-                adapter.add(OpenWeatherMap.Location(it))
+                adapter.add(it)
             }
         }
     }

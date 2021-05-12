@@ -2,6 +2,7 @@
     <string name="app_name">Generic Weather App</string>
     <string name="loading">Loading…</string>
     <string name="locations">Locations</string>
+    <string name="current_location">Current location</string>
     <string name="delete">Delete</string>
     <string name="confirm_delete_title">Confirm Delete</string>
     <string name="confirm_delete_description">%1$s will be removed from saved locations.</string>
