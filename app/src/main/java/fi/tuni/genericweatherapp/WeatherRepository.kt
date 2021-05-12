@@ -1,8 +1,8 @@
 package fi.tuni.genericweatherapp
 
+import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
@@ -42,6 +42,7 @@ class WeatherRepository @Inject constructor() {
 
     // Separate data class for combining all requested resources
     data class WeatherPacket(
+        val locationName: String,
         val weather: OpenWeatherMap.RootObject,
         val photo: Pexels.Photo,
         val bitmap: Bitmap
@@ -73,14 +74,6 @@ class WeatherRepository @Inject constructor() {
         this.longitude = longitude
     }
 
-    // Get location name for the current coordinates
-    fun fetchLocationNameAsync(lambda: (String) -> Unit) {
-        thread {
-            val result = weather.fetchLocationName(latitude, longitude)
-            lambda(result)
-        }
-    }
-
     // Get weather for the current location, and a weather related background image
     // 3 Different requests in one thread, the delay will be long
     fun fetchWeatherAsync(lambda: (WeatherPacket) -> Unit) {
@@ -92,8 +85,10 @@ class WeatherRepository @Inject constructor() {
             val photoResult = pexels.fetchCollectionMedia(photoCollection)
             val photo = photoResult.random()
             val bitmap = bitMapFromUrl(photo.portrait)
+            // Geocode the location's name
+            val name = MainApplication.geoCoder.getFromLocation(latitude, longitude, 1)[0].locality
             // Send to the lambda as a combined object
-            lambda(WeatherPacket(weatherResult, photo, bitmap))
+            lambda(WeatherPacket(name, weatherResult, photo, bitmap))
         }
     }
 }

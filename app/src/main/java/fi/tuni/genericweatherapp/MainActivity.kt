@@ -5,6 +5,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.drawable.BitmapDrawable
+import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.os.Looper
@@ -27,6 +28,7 @@ import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.weather.*
+import java.util.*
 import kotlin.collections.ArrayList
 
 /**
@@ -77,6 +79,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Access the ViewModel and observe for changes in its weather data
         val model: WeatherViewModel by viewModels()
         model.getWeather().observe(this) { data ->
+            // Change toolbar title to location name
+            toolbar.title = data.locationName
             // Change the background image
             imageView.setImageDrawable(BitmapDrawable(resources, data.bitmap))
             // Add photo credits and a link to the image
@@ -106,15 +110,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val alreadyGranted = ContextCompat.checkSelfPermission(this, perm) == PERMISSION_GRANTED
 
         val request = LocationRequest.create()
-        request.interval = 5000
-        request.priority = LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY
+        request.interval = 1000
+        request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
         val callback = object : LocationCallback() {
             override fun onLocationResult(result: LocationResult) {
                 val loc = result.lastLocation
                 Log.d("weatherDebug", loc.toString())
                 // Request weather for the received coordinates
-                model.requestForecast(loc.latitude, loc.longitude)
-                // Only one location needed for now
+                model.requestForecast(loc.latitude, loc.longitude, currentLocation = true)
+                // Only one location update needed for now
                 fusedClient.removeLocationUpdates(this)
             }
         }
@@ -123,7 +127,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         if (alreadyGranted) {
             // Permission has already been granted, register callback
             fusedClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
-            // fusedClient.lastLocation.addOnSuccessListener(locationListener)
         } else {
             // Ask for permission
             registerForActivityResult(
@@ -132,7 +135,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 if (granted) {
                     // Permission granted, register callback
                     fusedClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
-                    // fusedClient.lastLocation.addOnSuccessListener(locationListener)
                 } else {
                     // Rejected
                     Log.d("weatherDebug", "Location permission rejected")
@@ -148,7 +150,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     // Extract new location information from the bundle
                     val bundle = it.data?.extras
                     if (bundle != null) {
-                        toolbar.title = bundle.getString("locationName")
                         val lat = bundle.getDouble("latitude")
                         val lon = bundle.getDouble("longitude")
                         // Request the ViewModel to update the current location

@@ -40,7 +40,7 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         recyclerView.adapter = adapter
 
         // Data access object for making queries to the database
-        val dao = LocationDatabase.getInstance(applicationContext).locationDao()
+        val dao = MainApplication.database.locationDao()
 
         // Click listener for the search results
         adapter.locationClickedListener = {

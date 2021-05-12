@@ -53,7 +53,7 @@ class LocationsActivity : AppCompatActivity() {
         }
 
         // Data access object for querying the database
-        val dao = LocationDatabase.getInstance(applicationContext).locationDao()
+        val dao = MainApplication.database.locationDao()
 
         adapter.deleteButtonClickedListener = {
             AlertDialog.Builder(this)

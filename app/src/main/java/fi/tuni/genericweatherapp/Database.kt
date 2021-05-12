@@ -39,17 +39,4 @@ interface DBLocationDao {
 @Database(entities = [DBLocation::class], version = 1)
 abstract class LocationDatabase : RoomDatabase() {
     abstract fun locationDao(): DBLocationDao
-
-    companion object {
-        var instance: LocationDatabase? = null
-
-        fun getInstance(context: Context): LocationDatabase {
-            return instance ?: Room.databaseBuilder(
-                context,
-                LocationDatabase::class.java, "weather2-locations.db"
-            ).build().also {
-                instance = it
-            }
-        }
-    }
 }
