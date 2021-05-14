@@ -9,17 +9,23 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.concurrent.thread
 
 /**
  * Activity for adding new locations to the saved locations list
  */
+@AndroidEntryPoint
 class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
+    @Inject
+    lateinit var locationRepo: LocationRepository
+
     lateinit var searchView: SearchView
     lateinit var recyclerView: RecyclerView
     lateinit var toolbar: Toolbar
 
-    private val adapter = LocationSearchAdapter(ArrayList())
+    private val adapter = LocationSearchAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,15 +45,10 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
-        // Data access object for making queries to the database
-        val dao = MainApplication.database.locationDao()
-
         // Click listener for the search results
         adapter.locationClickedListener = {
             // Add selected location to the database
-            thread {
-                dao.insertAll(DBLocation(it))
-            }
+            locationRepo.insertLocation(DBLocation(it))
             // Also send location information back to the launching activity
             // The result is used if the location was started from main activity, which will
             // Then make a request to its ViewModel to change the location.
@@ -77,14 +78,11 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
     // Make a query to the OpenWeatherMap API to receive matching locations,
     // and add them to the recyclerView via its adapter
     private fun searchLocation(query: String) {
-        adapter.clear()
         thread {
             val weather = OpenWeatherMap(owmKey)
             val locations = weather.fetchCoordinates(query)
             runOnUiThread {
-                locations.forEach {
-                    adapter.add(it)
-                }
+                adapter.setItems(locations.toList())
             }
         }
     }

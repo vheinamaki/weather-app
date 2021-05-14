@@ -3,6 +3,7 @@ package fi.tuni.genericweatherapp
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.util.Log
 import java.net.HttpURLConnection
 import java.net.URL
 import javax.inject.Inject
@@ -86,7 +87,10 @@ class WeatherRepository @Inject constructor() {
             val photo = photoResult.random()
             val bitmap = bitMapFromUrl(photo.portrait)
             // Geocode the location's name
-            val name = MainApplication.geoCoder.getFromLocation(latitude, longitude, 1)[0].locality
+            val name = weather.fetchLocationName(latitude, longitude)
+            Log.d("weatherDebug", "geocoded name: $name")
+            //val addresses = MainApplication.geoCoder.getFromLocation(latitude, longitude, 1)
+            //Log.d("weatherDebug", addresses.toString())
             // Send to the lambda as a combined object
             lambda(WeatherPacket(name, weatherResult, photo, bitmap))
         }

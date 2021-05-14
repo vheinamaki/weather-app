@@ -8,11 +8,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.MenuItem
 import android.view.View
+import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 import kotlin.concurrent.thread
 
 /**
@@ -20,9 +23,13 @@ import kotlin.concurrent.thread
  */
 @AndroidEntryPoint
 class LocationsActivity : AppCompatActivity() {
+    @Inject
+    lateinit var locationRepo: LocationRepository
+
     lateinit var toolbar: Toolbar
     lateinit var recyclerView: RecyclerView
-    private var adapter = SavedLocationAdapter(ArrayList())
+    lateinit var currentLocationItem: TextView
+    private var adapter = SavedLocationAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,45 +48,63 @@ class LocationsActivity : AppCompatActivity() {
         recyclerView.layoutManager = layoutManager
         recyclerView.adapter = adapter
 
+        // Configure current location button
+        currentLocationItem = findViewById(R.id.currentLocationItem)
+        // Set current location item's text to "Current location (Unknown)", update it later
+        currentLocationItem.text =
+            resources.getString(R.string.current_location, resources.getString(R.string.unknown))
+        // Set the default click listener, assuming that user's location hasn't been fetched yet
+        currentLocationItem.setOnClickListener {
+            val fusedClient = LocationServices.getFusedLocationProviderClient(this)
+            // TODO: Display loading icon while location is being fetched
+            // TODO: Handle error, currently it will hang
+            requestLocation(fusedClient, this) {
+                val loc = it.lastLocation
+                finishWithCoordinates(loc.latitude, loc.longitude)
+            }
+        }
+
         // Click listener for the listed locations
         // Sends the name and the coordinates of the selected location to MainActivity
         adapter.locationClickedListener = {
-            val returnIntent = Intent()
-            returnIntent.putExtra("locationName", it.name)
-            returnIntent.putExtra("latitude", it.latitude)
-            returnIntent.putExtra("longitude", it.longitude)
-            setResult(Activity.RESULT_OK, returnIntent)
-            finish()
+            finishWithCoordinates(it.latitude, it.longitude)
         }
-
-        // Data access object for querying the database
-        val dao = MainApplication.database.locationDao()
 
         adapter.deleteButtonClickedListener = {
             AlertDialog.Builder(this)
                 .setTitle(R.string.confirm_delete_title)
                 .setMessage(resources.getString(R.string.confirm_delete_description, it.name))
-                .setNegativeButton(R.string.confirm_delete_cancel) {
-                    dialog, _ ->
+                .setNegativeButton(R.string.confirm_delete_cancel) { dialog, _ ->
                     dialog.dismiss()
                 }
-                .setPositiveButton(R.string.confirm_delete_ok) {
-                    dialog, _ ->
+                .setPositiveButton(R.string.confirm_delete_ok) { dialog, _ ->
                     dialog.dismiss()
-                    thread {
-                        dao.delete(it)
-                    }
+                    locationRepo.deleteLocation(it)
                 }
                 .show()
         }
 
         // Listen for changes in the database, update listed locations in recyclerView
-        dao.getAll().observe(this) { locations ->
-            adapter.clear()
-            locations.forEach {
-                adapter.add(it)
+        locationRepo.locations.observe(this) { locations ->
+            adapter.setItems(locations)
+        }
+
+        // Listen for changes in the current GPS location
+        locationRepo.getCurrentLocation().observe(this) { location ->
+            Log.d("weatherDebug", "current GPS location: $location")
+            currentLocationItem.text = resources.getString(R.string.current_location, location.name)
+            currentLocationItem.setOnClickListener {
+                finishWithCoordinates(location.latitude, location.longitude)
             }
         }
+    }
+
+    private fun finishWithCoordinates(latitude: Double, longitude: Double) {
+        val returnIntent = Intent()
+        returnIntent.putExtra("latitude", latitude)
+        returnIntent.putExtra("longitude", longitude)
+        setResult(Activity.RESULT_OK, returnIntent)
+        finish()
     }
 
     // Click listener for the "back" arrow

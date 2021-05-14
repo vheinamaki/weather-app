@@ -83,4 +83,7 @@ dependencies {
 
     // Fused location provider
     implementation 'com.google.android.gms:play-services-location:18.0.0'
+
+    // AndroidX preferences
+    implementation 'androidx.preference:preference-ktx:1.1.1'
 }

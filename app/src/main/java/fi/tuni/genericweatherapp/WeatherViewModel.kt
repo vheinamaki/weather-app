@@ -13,7 +13,10 @@ import javax.inject.Inject
  * WeatherRepository.
  */
 @HiltViewModel
-class WeatherViewModel @Inject constructor(private val repository: WeatherRepository) :
+class WeatherViewModel @Inject constructor(
+    private val weatherRepo: WeatherRepository,
+    private val locationRepo: LocationRepository
+) :
     ViewModel() {
     private val liveWeather = MutableLiveData<WeatherRepository.WeatherPacket>()
 
@@ -25,19 +28,20 @@ class WeatherViewModel @Inject constructor(private val repository: WeatherReposi
         return liveWeather
     }
 
-    // Get data from WeatherRepository
-    private fun loadWeather() {
+    // Forward location change request to WeatherRepository and then update
+    // currentLocation determines whether or not to cache this as the user's GPS location, which
+    // can be then shown in the location list as the current location
+    fun requestForecast(latitude: Double, longitude: Double, currentLocation: Boolean = false) {
+        weatherRepo.changeLocation(latitude, longitude)
         loading.value = true
-        repository.fetchWeatherAsync {
+        weatherRepo.fetchWeatherAsync {
             // Use postValue instead of setting directly, since the lambda is run on a worker thread
             loading.postValue(false)
             liveWeather.postValue(it)
+            // Optionally send the location to LocationRepository to cache it as the current location
+            if (currentLocation) {
+                locationRepo.setCurrentLocation(it.locationName, latitude, longitude)
+            }
         }
-    }
-
-    // Forward location change request to WeatherRepository and then update
-    fun requestForecast(latitude: Double, longitude: Double) {
-        repository.changeLocation(latitude, longitude)
-        loadWeather()
     }
 }

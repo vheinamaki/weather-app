@@ -1,14 +1,9 @@
 package fi.tuni.genericweatherapp
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.content.pm.PackageManager.PERMISSION_GRANTED
 import android.graphics.drawable.BitmapDrawable
-import android.location.Geocoder
-import android.location.Location
 import android.os.Bundle
-import android.os.Looper
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
@@ -19,7 +14,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -28,8 +22,6 @@ import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.weather.*
-import java.util.*
-import kotlin.collections.ArrayList
 
 /**
  * Application's main activity, shows a weather forecast
@@ -44,13 +36,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var textDescription: TextView
     lateinit var textPhotographer: TextView
     lateinit var textPhotoLink: TextView
-    lateinit var recyclerView: RecyclerView
+    lateinit var hourlyRecyclerView: RecyclerView
+    lateinit var dailyRecyclerView: RecyclerView
 
     // Location-changing activity launcher, used to receive the new location
     private lateinit var changeLocation: ActivityResultLauncher<Intent>
 
-    // Adapter used by recyclerView
-    private val adapter = HourlyWeatherAdapter(ArrayList())
+    // Adapters used by recyclerView
+    private val hourlyWeatherAdapter = HourlyWeatherAdapter()
+    private val dailyWeatherAdapter = DailyWeatherAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +56,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         textDescription = findViewById(R.id.descriptionTextView)
         textPhotographer = findViewById(R.id.photographerTextView)
         textPhotoLink = findViewById(R.id.linkTextView)
-        recyclerView = findViewById(R.id.recyclerView)
+        hourlyRecyclerView = findViewById(R.id.hourlyRecyclerView)
+        dailyRecyclerView = findViewById(R.id.dailyRecyclerView)
         imageView = findViewById(R.id.imageView)
 
         navigationView = findViewById(R.id.navigationView)
@@ -96,50 +91,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             textDescription.text = data.weather.current.description
             // Insert forecast for the next 12 hours into the recyclerView via adapter
             val hourly = data.weather.hourly
-            adapter.setItems(hourly.take(12))
+            hourlyWeatherAdapter.setItems(hourly.take(12))
+            // Insert forecast for the next 7 days
+            dailyWeatherAdapter.setItems(data.weather.daily.toList())
         }
 
-        // Configure recyclerView's scroll direction and adapter to use
-        val layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = adapter
+        // Configure recyclerViews' scroll direction and adapter to use
+        val horizontalManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        hourlyRecyclerView.layoutManager = horizontalManager
+        hourlyRecyclerView.adapter = hourlyWeatherAdapter
+        val verticalManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
+        dailyRecyclerView.layoutManager = verticalManager
+        dailyRecyclerView.adapter = dailyWeatherAdapter
 
         // Get current location with Fused
         val fusedClient = LocationServices.getFusedLocationProviderClient(this)
-        val perm = Manifest.permission.ACCESS_FINE_LOCATION
-        val alreadyGranted = ContextCompat.checkSelfPermission(this, perm) == PERMISSION_GRANTED
-
-        val request = LocationRequest.create()
-        request.interval = 1000
-        request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
-        val callback = object : LocationCallback() {
-            override fun onLocationResult(result: LocationResult) {
-                val loc = result.lastLocation
-                Log.d("weatherDebug", loc.toString())
-                // Request weather for the received coordinates
-                model.requestForecast(loc.latitude, loc.longitude, currentLocation = true)
-                // Only one location update needed for now
-                fusedClient.removeLocationUpdates(this)
-            }
-        }
-
-        // Check location usage permissions
-        if (alreadyGranted) {
-            // Permission has already been granted, register callback
-            fusedClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
-        } else {
-            // Ask for permission
-            registerForActivityResult(
-                ActivityResultContracts.RequestPermission()
-            ) { granted ->
-                if (granted) {
-                    // Permission granted, register callback
-                    fusedClient.requestLocationUpdates(request, callback, Looper.getMainLooper())
-                } else {
-                    // Rejected
-                    Log.d("weatherDebug", "Location permission rejected")
-                }
-            }.launch(perm)
+        // TODO: Display loading icon while location is being fetched
+        // TODO: Handle error, currently it will hang
+        requestLocation(fusedClient, this) {
+            val loc = it.lastLocation
+            Log.d("weatherDebug", loc.toString())
+            // Request weather for the received coordinates
+            model.requestForecast(loc.latitude, loc.longitude, currentLocation = true)
         }
 
         // Configure the activity launcher result callback

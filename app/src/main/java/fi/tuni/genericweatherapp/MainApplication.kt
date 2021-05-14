@@ -20,7 +20,7 @@ class MainApplication : Application() {
         // Rest of the UI is in english as well, use a static locale for consistency
         geoCoder = Geocoder(this, Locale.ENGLISH)
     }
-    
+
     companion object {
         lateinit var database: LocationDatabase
         lateinit var geoCoder: Geocoder
