@@ -1,8 +1,6 @@
 package fi.tuni.genericweatherapp
 
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
@@ -10,44 +8,29 @@ import androidx.recyclerview.widget.RecyclerView
 /**
  * RecyclerView adapter for locations listed in the location search list
  */
-class LocationSearchAdapter(private val data: ArrayList<OpenWeatherMap.Location>) :
-    RecyclerView.Adapter<LocationSearchAdapter.LocationHolder>() {
+class LocationSearchAdapter :
+    SimpleArrayListAdapter<OpenWeatherMap.Location, LocationSearchAdapter.Holder>(R.layout.item_location_searched) {
     var locationClickedListener: ((OpenWeatherMap.Location) -> Unit)? = null
 
-    class LocationHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class Holder(view: View) : RecyclerView.ViewHolder(view) {
         val item: LinearLayout = view.findViewById(R.id.locationItem)
         val nameTextView: TextView = view.findViewById(R.id.locationNameTextView)
         val countryTextView: TextView = view.findViewById(R.id.locationCountryTextView)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): LocationHolder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_location_searched, parent, false)
-        return LocationHolder(view)
-    }
-
-    override fun onBindViewHolder(holder: LocationHolder, position: Int) {
+    override fun onBind(holder: Holder, item: OpenWeatherMap.Location) {
         // Add click listener for the item
         holder.item.setOnClickListener {
-            locationClicked(data[position])
+            locationClicked(item)
         }
-        holder.nameTextView.text = data[position].name
-        holder.countryTextView.text = data[position].country
+        holder.nameTextView.text = item.name
+        holder.countryTextView.text = item.country
     }
 
-    override fun getItemCount() = data.size
-
-    fun add(location: OpenWeatherMap.Location) {
-        data.add(location)
-        notifyDataSetChanged()
-    }
-
-    fun clear() {
-        data.clear()
-        notifyDataSetChanged()
-    }
+    override fun holderFactory(view: View) = Holder(view)
 
     private fun locationClicked(location: OpenWeatherMap.Location) {
         locationClickedListener?.invoke(location)
     }
 }
+

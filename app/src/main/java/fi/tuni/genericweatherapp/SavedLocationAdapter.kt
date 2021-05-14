@@ -1,9 +1,6 @@
 package fi.tuni.genericweatherapp
 
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -12,8 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 /**
  * RecyclerView adapter for locations listed in the location search list
  */
-class SavedLocationAdapter(private val data: ArrayList<DBLocation>) :
-    RecyclerView.Adapter<SavedLocationAdapter.Holder>() {
+class SavedLocationAdapter :
+    SimpleArrayListAdapter<DBLocation, SavedLocationAdapter.Holder>(R.layout.item_location_saved) {
     var locationClickedListener: ((DBLocation) -> Unit)? = null
     var deleteButtonClickedListener: ((DBLocation) -> Unit)? = null
 
@@ -24,35 +21,19 @@ class SavedLocationAdapter(private val data: ArrayList<DBLocation>) :
         val deleteButton: ImageButton = view.findViewById(R.id.savedLocationDeleteButton)
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder {
-        val view =
-            LayoutInflater.from(parent.context).inflate(R.layout.item_location_saved, parent, false)
-        return Holder(view)
-    }
-
-    override fun onBindViewHolder(holder: Holder, position: Int) {
-        // Add click listener for the item
+    override fun onBind(holder: Holder, item: DBLocation) {
+        // Add click listener for the item and its delete button
         holder.item.setOnClickListener {
-            locationClicked(data[position])
+            locationClicked(item)
         }
         holder.deleteButton.setOnClickListener {
-            deleteButtonClicked(data[position])
+            deleteButtonClicked(item)
         }
-        holder.nameTextView.text = data[position].name
-        holder.countryTextView.text = data[position].country
+        holder.nameTextView.text = item.name
+        holder.countryTextView.text = item.country
     }
 
-    override fun getItemCount() = data.size
-
-    fun add(location: DBLocation) {
-        data.add(location)
-        notifyDataSetChanged()
-    }
-
-    fun clear() {
-        data.clear()
-        notifyDataSetChanged()
-    }
+    override fun holderFactory(view: View) = Holder(view)
 
     private fun locationClicked(location: DBLocation) {
         locationClickedListener?.invoke(location)
