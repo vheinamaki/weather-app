@@ -7,7 +7,7 @@
     android:orientation="vertical"
     tools:context=".AddLocationActivity">
 
-    <include layout="@layout/toolbar" />
+    <include android:id="@+id/toolbar" layout="@layout/toolbar" />
 
     <androidx.appcompat.widget.SearchView
         android:id="@+id/searchView"
@@ -17,7 +17,7 @@
         app:queryHint="@string/locationsearch_hint"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/searchRecyclerView"
+        android:id="@+id/recyclerView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"

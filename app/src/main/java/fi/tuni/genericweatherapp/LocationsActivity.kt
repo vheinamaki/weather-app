@@ -15,6 +15,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.databinding.ActivityLocationsBinding
+import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import javax.inject.Inject
 import kotlin.concurrent.thread
 
@@ -26,35 +28,32 @@ class LocationsActivity : AppCompatActivity() {
     @Inject
     lateinit var locationRepo: LocationRepository
 
-    lateinit var toolbar: Toolbar
-    lateinit var recyclerView: RecyclerView
-    lateinit var currentLocationItem: TextView
+    lateinit var binding: ActivityLocationsBinding
+
     private var adapter = SavedLocationAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_locations)
+        binding = ActivityLocationsBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Configure the toolbar
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar.root)
         val actionBar = supportActionBar
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
         // Configure recyclerView
-        recyclerView = findViewById(R.id.recyclerView)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.adapter = adapter
 
         // Configure current location button
-        currentLocationItem = findViewById(R.id.currentLocationItem)
         // Set current location item's text to "Current location (Unknown)", update it later
-        currentLocationItem.text =
+        binding.currentLocationItem.text =
             resources.getString(R.string.current_location, resources.getString(R.string.unknown))
         // Set the default click listener, assuming that user's location hasn't been fetched yet
-        currentLocationItem.setOnClickListener {
+        binding.currentLocationItem.setOnClickListener {
             val fusedClient = LocationServices.getFusedLocationProviderClient(this)
             // TODO: Display loading icon while location is being fetched
             // TODO: Handle error, currently it will hang
@@ -92,8 +91,9 @@ class LocationsActivity : AppCompatActivity() {
         // Listen for changes in the current GPS location
         locationRepo.getCurrentLocation().observe(this) { location ->
             Log.d("weatherDebug", "current GPS location: $location")
-            currentLocationItem.text = resources.getString(R.string.current_location, location.name)
-            currentLocationItem.setOnClickListener {
+            binding.currentLocationItem.text =
+                resources.getString(R.string.current_location, location.name)
+            binding.currentLocationItem.setOnClickListener {
                 finishWithCoordinates(location.latitude, location.longitude)
             }
         }

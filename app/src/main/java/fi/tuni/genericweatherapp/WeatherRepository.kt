@@ -47,13 +47,6 @@ class WeatherRepository @Inject constructor() {
             this.weather.units = value
         }
 
-    val unitsSymbol: String
-        get() = when (units) {
-            "metric" -> "°C"
-            "imperial" -> "°F"
-            else -> " K"
-        }
-
     // Separate data class for combining all requested resources
     data class WeatherPacket(
         val locationName: String,

@@ -25,6 +25,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.weather.*
 import java.util.*
 
@@ -33,16 +34,8 @@ import java.util.*
  */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
-    lateinit var drawerLayout: DrawerLayout
-    lateinit var navigationView: NavigationView
-    lateinit var imageView: ImageView
-    lateinit var toolbar: Toolbar
-    lateinit var textTemperature: TextView
-    lateinit var textDescription: TextView
-    lateinit var textPhotographer: TextView
-    lateinit var textPhotoLink: TextView
-    lateinit var hourlyRecyclerView: RecyclerView
-    lateinit var dailyRecyclerView: RecyclerView
+    // Auto-generated view binding class (replaces findViewById calls)
+    lateinit var binding: ActivityMainBinding
 
     // Location-changing activity launcher, used to receive the new location
     private lateinit var changeLocation: ActivityResultLauncher<Intent>
@@ -53,24 +46,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        // Obtain references to layout views
-        drawerLayout = findViewById(R.id.drawerLayout)
-        textTemperature = findViewById(R.id.tempTextView)
-        textDescription = findViewById(R.id.descriptionTextView)
-        textPhotographer = findViewById(R.id.photographerTextView)
-        textPhotoLink = findViewById(R.id.linkTextView)
-        hourlyRecyclerView = findViewById(R.id.hourlyRecyclerView)
-        dailyRecyclerView = findViewById(R.id.dailyRecyclerView)
-        imageView = findViewById(R.id.imageView)
-
-        navigationView = findViewById(R.id.navigationView)
         // Register event listener for navigation drawer
-        navigationView.setNavigationItemSelectedListener(this)
+        binding.navigationView.setNavigationItemSelectedListener(this)
 
         // Configure toolbar
-        toolbar = findViewById(R.id.toolbar)
+        val toolbar = binding.toolbar.root
         setSupportActionBar(toolbar)
         val actionBar = supportActionBar
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24)
@@ -82,9 +65,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Change toolbar title to location name
             toolbar.title = data.locationName
             // Change the background image
-            imageView.setImageDrawable(BitmapDrawable(resources, data.bitmap))
+            binding.imageView.setImageDrawable(BitmapDrawable(resources, data.bitmap))
             // Add photo credits and a link to the image
-            textPhotographer.text = resources.getString(
+            binding.weather.photographerTextView.text = resources.getString(
                 R.string.photographer_credit,
                 data.photo.photographer
             )
@@ -92,8 +75,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Set current weather temperature and description
             // TODO: Move formatting to ViewModel
             val symbol = model.getUnitsSymbol()
-            textTemperature.text = String.format("%.1f$symbol", data.weather.current.temp)
-            textDescription.text = data.weather.current.description
+            binding.weather.tempTextView.text =
+                String.format("%.1f$symbol", data.weather.current.temp)
+            binding.weather.descriptionTextView.text = data.weather.current.description
             // Insert forecast for the next 12 hours into the recyclerView via adapter
             val hourly = data.weather.hourly
             hourlyWeatherAdapter.setItems(hourly.take(12))
@@ -174,7 +158,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Toolbar click events
         when (item.itemId) {
             android.R.id.home -> {
-                drawerLayout.openDrawer(GravityCompat.START)
+                binding.root.openDrawer(GravityCompat.START)
                 return true
             }
             R.id.toolbarAddLocation -> {
@@ -195,7 +179,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 startActivity(Intent(this, SettingsActivity::class.java))
             }
         }
-        drawerLayout.closeDrawer(GravityCompat.START)
+        binding.root.closeDrawer(GravityCompat.START)
         return true
     }
 }

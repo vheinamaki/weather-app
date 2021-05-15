@@ -1,5 +1,7 @@
 package fi.tuni.genericweatherapp
 
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -15,9 +17,9 @@ import javax.inject.Inject
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
     private val weatherRepo: WeatherRepository,
-    private val locationRepo: LocationRepository
+    private val locationRepo: LocationRepository, application: Application
 ) :
-    ViewModel() {
+    AndroidViewModel(application) {
     private val liveWeather = MutableLiveData<WeatherRepository.WeatherPacket>()
 
     // TODO: Use to implement loading state
@@ -53,5 +55,9 @@ class WeatherViewModel @Inject constructor(
         weatherRepo.units = system
     }
 
-    fun getUnitsSymbol(): String = weatherRepo.unitsSymbol
+    fun getUnitsSymbol(): String = when (weatherRepo.units) {
+        "metric" -> "°C"
+        "imperial" -> "°F"
+        else -> " K"
+    }
 }

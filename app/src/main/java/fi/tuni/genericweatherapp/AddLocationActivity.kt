@@ -10,6 +10,7 @@ import androidx.appcompat.widget.Toolbar
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.databinding.ActivityAddLocationBinding
 import javax.inject.Inject
 import kotlin.concurrent.thread
 
@@ -21,29 +22,26 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
     @Inject
     lateinit var locationRepo: LocationRepository
 
-    lateinit var searchView: SearchView
-    lateinit var recyclerView: RecyclerView
-    lateinit var toolbar: Toolbar
+    lateinit var binding: ActivityAddLocationBinding
 
     private val adapter = LocationSearchAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add_location)
+        binding = ActivityAddLocationBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         // Configure the toolbar
-        toolbar = findViewById(R.id.toolbar)
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar.root)
         val actionBar = supportActionBar
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.title = "Add new location"
 
         // Configure recyclerView for listing the search results
-        recyclerView = findViewById(R.id.searchRecyclerView)
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        recyclerView.layoutManager = layoutManager
-        recyclerView.adapter = adapter
+        binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.adapter = adapter
 
         // Click listener for the search results
         adapter.locationClickedListener = {
@@ -60,10 +58,9 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
             finish()
         }
 
-        searchView = findViewById(R.id.searchView)
-        searchView.setIconifiedByDefault(false)
-        searchView.requestFocus()
-        searchView.setOnQueryTextListener(this)
+        binding.searchView.setIconifiedByDefault(false)
+        binding.searchView.requestFocus()
+        binding.searchView.setOnQueryTextListener(this)
     }
 
     // Click listener for the back arrow
