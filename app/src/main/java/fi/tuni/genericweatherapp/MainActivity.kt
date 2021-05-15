@@ -2,7 +2,10 @@ package fi.tuni.genericweatherapp
 
 import android.app.Activity
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.drawable.BitmapDrawable
+import android.icu.util.LocaleData
+import android.icu.util.ULocale
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
@@ -16,12 +19,14 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.weather.*
+import java.util.*
 
 /**
  * Application's main activity, shows a weather forecast
@@ -86,8 +91,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             linkTextView.text = data.photo.pageUrl
             // Set current weather temperature and description
             // TODO: Move formatting to ViewModel
-            // TODO: Also allow K and °F
-            textTemperature.text = String.format("%.1f\u00B0C", data.weather.current.temp)
+            val symbol = model.getUnitsSymbol()
+            textTemperature.text = String.format("%.1f$symbol", data.weather.current.temp)
             textDescription.text = data.weather.current.description
             // Insert forecast for the next 12 hours into the recyclerView via adapter
             val hourly = data.weather.hourly
@@ -95,6 +100,33 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Insert forecast for the next 7 days
             dailyWeatherAdapter.setItems(data.weather.daily.toList())
         }
+
+        // Set temperature units
+        val fahrenheitUsers = listOf(
+            "us", // U.S.
+            "bs", // Bahamas
+            "ky", // Cayman Islands
+            "lr", // Liberia
+            "pw", // Palau
+            "fm", // Micronesia
+            "mh", // Marshall Islands
+        )
+
+        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
+        val defaultUnits =
+            if (Locale.getDefault().country in fahrenheitUsers) "imperial" else "metric"
+        val unitsPref = preferences.getString("units", defaultUnits) ?: defaultUnits
+        val usedUnits =
+            if (unitsPref in listOf(
+                    "metric",
+                    "imperial",
+                    "standard"
+                )
+            ) unitsPref else defaultUnits.also {
+                preferences.edit().putString("units", defaultUnits).apply()
+            }
+        model.setUnits(usedUnits)
+
 
         // Configure recyclerViews' scroll direction and adapter to use
         val horizontalManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -158,6 +190,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             R.id.navManageLocations -> {
                 changeLocation.launch(Intent(this, LocationsActivity::class.java))
+            }
+            R.id.navSettings -> {
+                startActivity(Intent(this, SettingsActivity::class.java))
             }
         }
         drawerLayout.closeDrawer(GravityCompat.START)

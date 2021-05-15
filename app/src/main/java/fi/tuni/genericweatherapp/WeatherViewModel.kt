@@ -44,4 +44,14 @@ class WeatherViewModel @Inject constructor(
             }
         }
     }
+
+    fun refreshForecast() {
+        requestForecast(weatherRepo.latitude, weatherRepo.longitude)
+    }
+
+    fun setUnits(system: String) {
+        weatherRepo.units = system
+    }
+
+    fun getUnitsSymbol(): String = weatherRepo.unitsSymbol
 }

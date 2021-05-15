@@ -14,4 +14,9 @@
     <string name="about">About</string>
     <string name="locationsearch_hint">Enter Location name</string>
     <string name="photographer_credit">Photo by %1$s on Pexels</string>
+
+    <string name="settings_units_title">Units</string>
+    <string name="settings_units_celsius">°C</string>
+    <string name="settings_units_fahrenheit">°F</string>
+    <string name="settings_units_kelvin">K</string>
 </resources>

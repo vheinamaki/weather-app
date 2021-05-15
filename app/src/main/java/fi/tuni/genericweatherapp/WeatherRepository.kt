@@ -34,12 +34,25 @@ enum class WeatherType(val photoCollection: String) {
 @Singleton
 class WeatherRepository @Inject constructor() {
     // Latitude and longitude of the current location
-    private var latitude: Double = 0.0
-    private var longitude: Double = 0.0
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
 
     // API Request objects
     private val weather = OpenWeatherMap(owmKey)
     private val pexels = Pexels(pexelsKey)
+
+    var units: String
+        get() = this.weather.units
+        set(value) {
+            this.weather.units = value
+        }
+
+    val unitsSymbol: String
+        get() = when (units) {
+            "metric" -> "°C"
+            "imperial" -> "°F"
+            else -> " K"
+        }
 
     // Separate data class for combining all requested resources
     data class WeatherPacket(
