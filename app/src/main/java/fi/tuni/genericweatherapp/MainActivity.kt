@@ -28,12 +28,16 @@ import dagger.hilt.android.AndroidEntryPoint
 import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import kotlinx.android.synthetic.main.weather.*
 import java.util.*
+import javax.inject.Inject
 
 /**
  * Application's main activity, shows a weather forecast
  */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+    @Inject
+    lateinit var weatherRepo: WeatherRepository
+
     // Auto-generated view binding class (replaces findViewById calls)
     lateinit var binding: ActivityMainBinding
 
@@ -59,8 +63,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_menu_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
 
-        // Access the ViewModel and observe for changes in its weather data
+        // Access the ViewModel to observe for changes in its data
         val model: WeatherViewModel by viewModels()
+
+        // Listen for successful forecast requests
         model.getWeather().observe(this) { data ->
             // Change toolbar title to location name
             toolbar.title = data.locationName
@@ -85,32 +91,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             dailyWeatherAdapter.setItems(data.weather.daily.toList())
         }
 
-        // Set temperature units
-        val fahrenheitUsers = listOf(
-            "us", // U.S.
-            "bs", // Bahamas
-            "ky", // Cayman Islands
-            "lr", // Liberia
-            "pw", // Palau
-            "fm", // Micronesia
-            "mh", // Marshall Islands
-        )
+        // TODO: Display loading icon while location is being fetched
+        model.isLoading().observe(this) { loading ->
+            binding.weather.tempTextView.text = if (loading) "Loading..." else "Loaded"
+        }
 
-        val preferences = PreferenceManager.getDefaultSharedPreferences(this)
-        val defaultUnits =
-            if (Locale.getDefault().country in fahrenheitUsers) "imperial" else "metric"
-        val unitsPref = preferences.getString("units", defaultUnits) ?: defaultUnits
-        val usedUnits =
-            if (unitsPref in listOf(
-                    "metric",
-                    "imperial",
-                    "standard"
-                )
-            ) unitsPref else defaultUnits.also {
-                preferences.edit().putString("units", defaultUnits).apply()
+        // Listen for failed forecast requests
+        model.didLoadingFail().observe(this) { didFail ->
+            if (didFail) {
+                Log.d("weatherDebug", "Forecast request failed")
             }
-        model.setUnits(usedUnits)
+        }
 
+        // Listen for changes in weather repository's unit settings
+        weatherRepo.unitsChanged().observe(this) {
+            Log.d("weatherDebug", "units changed")
+            // Reload forecast with new units
+            model.refreshForecast()
+        }
 
         // Configure recyclerViews' scroll direction and adapter to use
         val horizontalManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
@@ -122,16 +120,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Get current location with Fused
         val fusedClient = LocationServices.getFusedLocationProviderClient(this)
-        // TODO: Display loading icon while location is being fetched
         // TODO: Handle error, currently it will hang
         requestLocation(fusedClient, this) {
-            val loc = it.lastLocation
-            Log.d("weatherDebug", loc.toString())
-            // Request weather for the received coordinates
-            model.requestForecast(loc.latitude, loc.longitude, currentLocation = true)
+            val loc = it?.lastLocation
+            if (loc != null) {
+                Log.d("weatherDebug", loc.toString())
+                // Request weather for the received coordinates
+                model.requestForecast(loc.latitude, loc.longitude, currentLocation = true)
+            } else {
+                Log.d("weatherDebug", "Location request failed")
+            }
         }
 
         // Configure the activity launcher result callback
+        // Used by LocationsActivity and AddLocationActivity to send back the selected location
         changeLocation =
             registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
                 // RESULT_OK is received if a location was selected in the started activity

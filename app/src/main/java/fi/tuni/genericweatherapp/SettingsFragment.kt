@@ -37,6 +37,9 @@ class SettingsFragment : PreferenceFragmentCompat(),
                 "Preference value was updated to: $newValue"
             )
             if (newValue != null) {
+                if (weatherRepo.units != newValue) {
+                    weatherRepo.informUnitsChanged()
+                }
                 weatherRepo.units = newValue
             }
         }

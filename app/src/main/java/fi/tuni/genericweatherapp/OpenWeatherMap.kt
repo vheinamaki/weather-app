@@ -16,6 +16,8 @@ import java.util.*
 
 /**
  * Helper class for making HTTP requests to the OpenWeatherMap API
+ *
+ * The functions here are synchronous and will throw exceptions if the requests fail
  */
 class OpenWeatherMap(
     var apiKey: String,
@@ -26,92 +28,68 @@ class OpenWeatherMap(
     private val mapper = jacksonObjectMapper()
 
 
-    // Data model classes are parcelable and can be parsed by jackson
-    // Parcelable constructor
-    @Parcelize
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Hourly(
-        var conditionCode: Int,
-        var title: String,
-        var description: String,
-        var icon: String,
-        var time: Date,
         var temp: Double,
+        @JsonProperty("feels_like")
         var feelsLike: Double,
         var pressure: Int,
         var humidity: Int,
+        @JsonProperty("wind_speed")
         var windSpeed: Double,
+        @JsonProperty("wind_deg")
         var windDeg: Double
-    ) : Parcelable {
+    ) {
+        var conditionCode: Int = 0
+        lateinit var title: String
+        lateinit var description: String
+        lateinit var icon: String
+        lateinit var time: Date
 
-        // Jackson constructor
-        @JsonCreator
-        constructor(
-            @JsonProperty("weather") weathers: Array<Map<String, String>>,
-            @JsonProperty dt: Long,
-            @JsonProperty temp: Double,
-            @JsonProperty("feels_like") feelsLike: Double,
-            @JsonProperty pressure: Int,
-            @JsonProperty humidity: Int,
-            @JsonProperty("wind_speed") windSpeed: Double,
-            @JsonProperty("wind_deg") windDeg: Double
-        ) : this(
-            weathers[0]["id"]!!.toInt(),
-            weathers[0]["main"]!!,
-            weathers[0]["description"]!!,
-            weathers[0]["icon"]!!,
-            Date(dt * 1000),
-            temp,
-            feelsLike,
-            pressure,
-            humidity,
-            windSpeed,
-            windDeg
-        )
+        @JsonProperty("weather")
+        fun unpackWeather(weathers: Array<Map<String, String>>) {
+            conditionCode = weathers[0]["id"]!!.toInt()
+            title = weathers[0]["main"]!!
+            description = weathers[0]["description"]!!
+            icon = weathers[0]["icon"]!!
+        }
+
+        @JsonProperty("dt")
+        fun convertTime(dt: Long) {
+            time = Date(dt * 1000)
+        }
     }
 
-    // Parcelable constructor
-    @Parcelize
-    @TypeParceler<DayTemps, DayTempsParceler>()
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Daily(
-        var conditionCode: Int,
-        var title: String,
-        var description: String,
-        var icon: String,
-        var time: Date,
         var temp: DayTemps,
+        @JsonProperty("feels_like")
         var feelsLike: DayTemps,
         var pressure: Int,
         var humidity: Int,
+        @JsonProperty("wind_speed")
         var windSpeed: Double,
+        @JsonProperty("wind_deg")
         var windDeg: Double
-    ) : Parcelable {
+    ) {
+        var conditionCode: Int = 0
+        lateinit var title: String
+        lateinit var description: String
+        lateinit var icon: String
+        lateinit var time: Date
 
-        // Jackson constructor
-        @JsonCreator
-        constructor(
-            @JsonProperty("weather") weathers: Array<Map<String, String>>,
-            @JsonProperty dt: Long,
-            @JsonProperty temp: DayTemps,
-            @JsonProperty("feels_like") feelsLike: DayTemps,
-            @JsonProperty pressure: Int,
-            @JsonProperty humidity: Int,
-            @JsonProperty("wind_speed") windSpeed: Double,
-            @JsonProperty("wind_deg") windDeg: Double
-        ) : this(
-            weathers[0]["id"]!!.toInt(),
-            weathers[0]["main"]!!,
-            weathers[0]["description"]!!,
-            weathers[0]["icon"]!!,
-            Date(dt * 1000),
-            temp,
-            feelsLike,
-            pressure,
-            humidity,
-            windSpeed,
-            windDeg
-        )
+        @JsonProperty("weather")
+        fun unpackWeather(weather: Array<Map<String, String>>) {
+            conditionCode = weather[0]["id"]!!.toInt()
+            title = weather[0]["main"]!!
+            description = weather[0]["description"]!!
+            icon = weather[0]["icon"]!!
+        }
+
+        @JsonProperty("dt")
+        fun convertTime(dt: Long) {
+            time = Date(dt * 1000)
+        }
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -123,23 +101,6 @@ class OpenWeatherMap(
         var evening: Double,
         var night: Double
     )
-
-    object DayTempsParceler : Parceler<DayTemps> {
-        override fun create(parcel: Parcel) = DayTemps(
-            parcel.readDouble(),
-            parcel.readDouble(),
-            parcel.readDouble(),
-            parcel.readDouble()
-        )
-
-        override fun DayTemps.write(parcel: Parcel, flags: Int) {
-            parcel.writeDouble(morning)
-            parcel.writeDouble(day)
-            parcel.writeDouble(evening)
-            parcel.writeDouble(night)
-        }
-    }
-
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class RootObject(

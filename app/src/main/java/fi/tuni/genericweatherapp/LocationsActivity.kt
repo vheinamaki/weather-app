@@ -58,8 +58,10 @@ class LocationsActivity : AppCompatActivity() {
             // TODO: Display loading icon while location is being fetched
             // TODO: Handle error, currently it will hang
             requestLocation(fusedClient, this) {
-                val loc = it.lastLocation
-                finishWithCoordinates(loc.latitude, loc.longitude)
+                val loc = it?.lastLocation
+                if (loc != null) {
+                    finishWithCoordinates(loc.latitude, loc.longitude)
+                }
             }
         }
 

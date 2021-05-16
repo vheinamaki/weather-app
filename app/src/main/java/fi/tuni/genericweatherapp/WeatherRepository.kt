@@ -4,11 +4,17 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.thread
+
+// 1h cache for location requests
+private const val CACHE_AGE = 3600000L
 
 // Weather conditions with their associated photo collections on Pexels
 enum class WeatherType(val photoCollection: String) {
@@ -41,6 +47,11 @@ class WeatherRepository @Inject constructor() {
     private val weather = OpenWeatherMap(owmKey)
     private val pexels = Pexels(pexelsKey)
 
+    // Access cached forecasts
+    private val forecastDao = MainApplication.database.forecastDao()
+
+    private val observableUnits = MutableLiveData<String>()
+
     var units: String
         get() = this.weather.units
         set(value) {
@@ -67,6 +78,12 @@ class WeatherRepository @Inject constructor() {
         }
     }
 
+    fun informUnitsChanged() {
+        observableUnits.postValue(units)
+    }
+
+    fun unitsChanged(): LiveData<String> = observableUnits
+
     // Helper method get a Bitmap image for photo url
     private fun bitMapFromUrl(url: String): Bitmap {
         val connection = URL(url).openConnection() as HttpURLConnection
@@ -82,23 +99,56 @@ class WeatherRepository @Inject constructor() {
     }
 
     // Get weather for the current location, and a weather related background image
-    // 3 Different requests in one thread, the delay will be long
-    fun fetchWeatherAsync(lambda: (WeatherPacket) -> Unit) {
+    fun fetchWeatherAsync(lambda: (WeatherPacket?) -> Unit) {
+        // TODO: Check if the last request was same as current, and if enough time has passed
         thread {
-            val weatherResult = weather.fetchWeather(latitude, longitude)
-            // Choose a random background image from the weather condition's photo collection
-            val photoCollection =
-                getWeatherType(weatherResult.current.conditionCode).photoCollection
-            val photoResult = pexels.fetchCollectionMedia(photoCollection)
-            val photo = photoResult.random()
-            val bitmap = bitMapFromUrl(photo.portrait)
-            // Geocode the location's name
-            val name = weather.fetchLocationName(latitude, longitude)
-            Log.d("weatherDebug", "geocoded name: $name")
-            //val addresses = MainApplication.geoCoder.getFromLocation(latitude, longitude, 1)
-            //Log.d("weatherDebug", addresses.toString())
-            // Send to the lambda as a combined object
-            lambda(WeatherPacket(name, weatherResult, photo, bitmap))
+            val cacheResult = forecastDao.get(latitude, longitude, units).getOrNull(0)
+            if (cacheResult != null && (System.currentTimeMillis() - cacheResult.timeStamp) < CACHE_AGE) {
+                Log.d("weatherDebug", "Using cached result")
+                val packet = try {
+                    val bitmap = bitMapFromUrl(cacheResult.photo.portrait)
+                    WeatherPacket(
+                        cacheResult.locationName,
+                        cacheResult.weather,
+                        cacheResult.photo,
+                        bitmap
+                    )
+                } catch (e: Exception) {
+                    null
+                }
+                lambda(packet)
+            } else {
+                // Send weather forecast to the lambda as a combined object, or null if a request fails
+                val packet = try {
+                    val weatherResult = weather.fetchWeather(latitude, longitude)
+                    // Choose a random background image from the weather condition's photo collection
+                    val photoCollection =
+                        getWeatherType(weatherResult.current.conditionCode).photoCollection
+                    val photoResult = pexels.fetchCollectionMedia(photoCollection)
+                    val photo = photoResult.random()
+                    val bitmap = bitMapFromUrl(photo.portrait)
+                    // Geocode the location's name
+                    val name = weather.fetchLocationName(latitude, longitude)
+                    Log.d("weatherDebug", "geocoded name: $name")
+                    val timeStamp = System.currentTimeMillis()
+                    forecastDao.insertAll(
+                        CachedForecast(
+                            name,
+                            latitude,
+                            longitude,
+                            units,
+                            timeStamp,
+                            weatherResult,
+                            photo
+                        )
+                    )
+                    // 'packet' evaluates to this if everything succeeds
+                    WeatherPacket(name, weatherResult, photo, bitmap)
+                } catch (e: Exception) {
+                    null
+                }
+                lambda(packet)
+            }
         }
     }
 }

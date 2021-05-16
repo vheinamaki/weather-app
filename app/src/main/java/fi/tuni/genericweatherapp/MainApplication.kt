@@ -15,14 +15,14 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         // Location database for saved locations
-        database = Room.databaseBuilder(this, LocationDatabase::class.java, "weather2-locations.db")
+        database = Room.databaseBuilder(this, WeatherAppDatabase::class.java, "weather3-locations.db")
             .build()
         // Rest of the UI is in english as well, use a static locale for consistency
         geoCoder = Geocoder(this, Locale.ENGLISH)
     }
 
     companion object {
-        lateinit var database: LocationDatabase
+        lateinit var database: WeatherAppDatabase
         lateinit var geoCoder: Geocoder
     }
 }
