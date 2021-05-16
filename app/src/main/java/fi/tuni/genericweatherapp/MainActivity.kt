@@ -1,15 +1,18 @@
 package fi.tuni.genericweatherapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.graphics.drawable.BitmapDrawable
 import android.icu.util.LocaleData
 import android.icu.util.ULocale
 import android.os.Bundle
+import android.util.AttributeSet
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -26,7 +29,7 @@ import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
-import kotlinx.android.synthetic.main.weather.*
+import fi.tuni.genericweatherapp.databinding.FragmentWeatherBinding
 import java.util.*
 import javax.inject.Inject
 
@@ -43,10 +46,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     // Location-changing activity launcher, used to receive the new location
     private lateinit var changeLocation: ActivityResultLauncher<Intent>
-
-    // Adapters used by recyclerView
-    private val hourlyWeatherAdapter = HourlyWeatherAdapter()
-    private val dailyWeatherAdapter = DailyWeatherAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,34 +65,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Access the ViewModel to observe for changes in its data
         val model: WeatherViewModel by viewModels()
 
-        // Listen for successful forecast requests
         model.getWeather().observe(this) { data ->
             // Change toolbar title to location name
             toolbar.title = data.locationName
-            // Change the background image
-            binding.imageView.setImageDrawable(BitmapDrawable(resources, data.bitmap))
-            // Add photo credits and a link to the image
-            binding.weather.photographerTextView.text = resources.getString(
-                R.string.photographer_credit,
-                data.photo.photographer
-            )
-            linkTextView.text = data.photo.pageUrl
-            // Set current weather temperature and description
-            // TODO: Move formatting to ViewModel
-            val symbol = model.getUnitsSymbol()
-            binding.weather.tempTextView.text =
-                String.format("%.1f$symbol", data.weather.current.temp)
-            binding.weather.descriptionTextView.text = data.weather.current.description
-            // Insert forecast for the next 12 hours into the recyclerView via adapter
-            val hourly = data.weather.hourly
-            hourlyWeatherAdapter.setItems(hourly.take(12))
-            // Insert forecast for the next 7 days
-            dailyWeatherAdapter.setItems(data.weather.daily.toList())
-        }
-
-        // TODO: Display loading icon while location is being fetched
-        model.isLoading().observe(this) { loading ->
-            binding.weather.tempTextView.text = if (loading) "Loading..." else "Loaded"
         }
 
         // Listen for failed forecast requests
@@ -109,14 +83,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Reload forecast with new units
             model.refreshForecast()
         }
-
-        // Configure recyclerViews' scroll direction and adapter to use
-        val horizontalManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
-        hourlyRecyclerView.layoutManager = horizontalManager
-        hourlyRecyclerView.adapter = hourlyWeatherAdapter
-        val verticalManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
-        dailyRecyclerView.layoutManager = verticalManager
-        dailyRecyclerView.adapter = dailyWeatherAdapter
 
         // Get current location with Fused
         val fusedClient = LocationServices.getFusedLocationProviderClient(this)

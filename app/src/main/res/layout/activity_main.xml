@@ -17,23 +17,11 @@
             android:id="@+id/toolbar"
             layout="@layout/toolbar" />
 
-        <!-- Weather view linearlayout layered on top of bg image imageview -->
-        <FrameLayout
+        <androidx.fragment.app.FragmentContainerView
+            android:id="@+id/weatherFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
-
-            <ImageView
-                android:id="@+id/imageView"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:contentDescription="@null"
-                android:scaleType="centerCrop" />
-
-            <include
-                android:id="@+id/weather"
-                layout="@layout/weather" />
-        </FrameLayout>
-
+            android:layout_height="match_parent"
+            android:name="fi.tuni.genericweatherapp.WeatherFragment" />
     </LinearLayout>
 
     <!-- Navigation menu -->
