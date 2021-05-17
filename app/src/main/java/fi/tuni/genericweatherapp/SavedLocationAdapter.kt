@@ -5,6 +5,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import java.util.*
 
 /**
  * RecyclerView adapter for locations listed in the location search list
@@ -30,7 +31,7 @@ class SavedLocationAdapter :
             deleteButtonClicked(item)
         }
         holder.nameTextView.text = item.name
-        holder.countryTextView.text = item.country
+        holder.countryTextView.text = Locale("en", item.country).getDisplayCountry(Locale.ENGLISH)
     }
 
     override fun holderFactory(view: View) = Holder(view)

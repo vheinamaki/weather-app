@@ -61,10 +61,5 @@ class WeatherFragment : Fragment(R.layout.fragment_weather) {
             // Insert forecast for the next 7 days
             dailyWeatherAdapter.setItems(data.weather.daily.toList())
         }
-
-        // TODO: Display loading icon while location is being fetched
-        model.isLoading().observe(viewLifecycleOwner) { loading ->
-            binding.tempTextView.text = if (loading) "Loading..." else "Loaded"
-        }
     }
 }

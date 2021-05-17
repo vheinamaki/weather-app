@@ -17,11 +17,22 @@
             android:id="@+id/toolbar"
             layout="@layout/toolbar" />
 
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/weatherFragment"
+        <!-- Loading icon shown on top of the fragment -->
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:name="fi.tuni.genericweatherapp.WeatherFragment" />
+            android:layout_height="match_parent">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/mainFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+            <!-- Circular progress indicator at the middle of the screen -->
+            <include
+                android:id="@+id/progressIndicator"
+                layout="@layout/progress_indicator" />
+        </FrameLayout>
+
     </LinearLayout>
 
     <!-- Navigation menu -->

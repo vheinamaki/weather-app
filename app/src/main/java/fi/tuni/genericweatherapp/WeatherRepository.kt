@@ -105,6 +105,12 @@ class WeatherRepository @Inject constructor() {
             val cacheResult = forecastDao.get(latitude, longitude, units).getOrNull(0)
             if (cacheResult != null && (System.currentTimeMillis() - cacheResult.timeStamp) < CACHE_AGE) {
                 Log.d("weatherDebug", "Using cached result")
+                val remaining =
+                    (CACHE_AGE - (System.currentTimeMillis() - cacheResult.timeStamp)) / 60000.0
+                Log.d(
+                    "weatherDebug",
+                    "Cache time remaining: $remaining min"
+                )
                 val packet = try {
                     val bitmap = bitMapFromUrl(cacheResult.photo.portrait)
                     WeatherPacket(
@@ -129,7 +135,6 @@ class WeatherRepository @Inject constructor() {
                     val bitmap = bitMapFromUrl(photo.portrait)
                     // Geocode the location's name
                     val name = weather.fetchLocationName(latitude, longitude)
-                    Log.d("weatherDebug", "geocoded name: $name")
                     val timeStamp = System.currentTimeMillis()
                     forecastDao.insertAll(
                         CachedForecast(

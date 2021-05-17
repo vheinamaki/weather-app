@@ -1,12 +1,14 @@
 package fi.tuni.genericweatherapp
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +32,9 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         super.onCreate(savedInstanceState)
         binding = ActivityAddLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Progress indicator initially hidden
+        binding.progressIndicator.spinner.hide()
 
         // Configure the toolbar
         setSupportActionBar(binding.toolbar.root)
@@ -75,11 +80,31 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
     // Make a query to the OpenWeatherMap API to receive matching locations,
     // and add them to the recyclerView via its adapter
     private fun searchLocation(query: String) {
+        binding.noResultsTextView.isVisible = false
+        binding.progressIndicator.spinner.show()
         thread {
             val weather = OpenWeatherMap(owmKey)
-            val locations = weather.fetchCoordinates(query)
+            val locations = try {
+                weather.fetchCoordinates(query)
+            } catch (e: Exception) {
+                null
+            }
             runOnUiThread {
-                adapter.setItems(locations.toList())
+                binding.progressIndicator.spinner.hide()
+                if (locations != null) {
+                    adapter.setItems(locations.toList())
+                    if (locations.isEmpty()) {
+                        binding.noResultsTextView.isVisible = true
+                    }
+                } else {
+                    AlertDialog.Builder(this)
+                        .setTitle(R.string.request_error_title)
+                        .setMessage(R.string.request_error)
+                        .setNeutralButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
+                }
             }
         }
     }

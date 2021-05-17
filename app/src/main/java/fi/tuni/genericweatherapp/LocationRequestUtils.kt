@@ -1,6 +1,7 @@
 package fi.tuni.genericweatherapp
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.pm.PackageManager
 import android.os.CountDownTimer
 import android.os.Looper
@@ -13,14 +14,13 @@ import com.google.android.gms.location.*
 // Location request timeout; If it takes more than 15 seconds then fire error callback
 private const val TIMEOUT = 15000L
 
+
+// One-time location request with automatic cancellation timeout
+@SuppressLint("MissingPermission")
 fun requestLocation(
     client: FusedLocationProviderClient,
-    activity: ComponentActivity,
-    lambda: (LocationResult?) -> Unit
+    lambda: (result: LocationResult?) -> Unit
 ) {
-    val perm = Manifest.permission.ACCESS_FINE_LOCATION
-    val alreadyGranted =
-        ContextCompat.checkSelfPermission(activity, perm) == PackageManager.PERMISSION_GRANTED
     lateinit var timer: CountDownTimer
 
     val request = LocationRequest.create()
@@ -28,6 +28,10 @@ fun requestLocation(
     request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
+            Log.d(
+                "weatherDebug",
+                "Location request successful: ${result.lastLocation.latitude}, ${result.lastLocation.longitude}"
+            )
             timer.cancel()
             lambda(result)
             client.removeLocationUpdates(this)
@@ -54,26 +58,7 @@ fun requestLocation(
         }
     }
 
-    // Check location usage permissions
-    if (alreadyGranted) {
-        // Permission has already been granted, register callback
-        client.requestLocationUpdates(request, callback, Looper.getMainLooper())
-        Log.d("weatherDebug", "Start location request")
-        timer.start()
-    } else {
-        // Ask for permission
-        activity.registerForActivityResult(
-            ActivityResultContracts.RequestPermission()
-        ) { granted ->
-            if (granted) {
-                // Permission granted, register callback
-                client.requestLocationUpdates(request, callback, Looper.getMainLooper())
-                Log.d("weatherDebug", "Start location request")
-                timer.start()
-            } else {
-                // Rejected
-                Log.d("weatherDebug", "Location permission rejected")
-            }
-        }.launch(perm)
-    }
+    client.requestLocationUpdates(request, callback, Looper.getMainLooper())
+    Log.d("weatherDebug", "Start location request")
+    timer.start()
 }

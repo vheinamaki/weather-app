@@ -6,10 +6,12 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.LocationServices
@@ -54,15 +56,10 @@ class LocationsActivity : AppCompatActivity() {
             resources.getString(R.string.current_location, resources.getString(R.string.unknown))
         // Set the default click listener, assuming that user's location hasn't been fetched yet
         binding.currentLocationItem.setOnClickListener {
-            val fusedClient = LocationServices.getFusedLocationProviderClient(this)
-            // TODO: Display loading icon while location is being fetched
-            // TODO: Handle error, currently it will hang
-            requestLocation(fusedClient, this) {
-                val loc = it?.lastLocation
-                if (loc != null) {
-                    finishWithCoordinates(loc.latitude, loc.longitude)
-                }
-            }
+            val returnIntent = Intent()
+            returnIntent.putExtra("requestLocal", true)
+            setResult(Activity.RESULT_OK, returnIntent)
+            finish()
         }
 
         // Click listener for the listed locations
@@ -109,12 +106,26 @@ class LocationsActivity : AppCompatActivity() {
         finish()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        // Add toolbar_menu resource to the toolbar, containing the toolbarAddLocation button
+        menuInflater.inflate(R.menu.toolbar_menu, menu)
+        return true
+    }
+
     // Click listener for the "back" arrow
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == android.R.id.home) {
-            setResult(Activity.RESULT_CANCELED)
-            finish()
-            return true
+        // Toolbar click events
+        when (item.itemId) {
+            android.R.id.home -> {
+                setResult(Activity.RESULT_CANCELED)
+                finish()
+                return true
+            }
+            R.id.toolbarAddLocation -> {
+                // Start the location-adding activity
+                startActivity(Intent(this, AddLocationActivity::class.java))
+                return true
+            }
         }
         return super.onOptionsItemSelected(item)
     }

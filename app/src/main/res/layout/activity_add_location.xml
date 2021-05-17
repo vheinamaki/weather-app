@@ -7,19 +7,45 @@
     android:orientation="vertical"
     tools:context=".AddLocationActivity">
 
-    <include android:id="@+id/toolbar" layout="@layout/toolbar" />
+    <include
+        android:id="@+id/toolbar"
+        layout="@layout/toolbar" />
 
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/searchView"
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:iconifiedByDefault="false"
-        app:queryHint="@string/locationsearch_hint"/>
+        android:layout_height="match_parent">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:scrollbars="vertical" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/searchView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:iconifiedByDefault="false"
+                app:queryHint="@string/locationsearch_hint" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recyclerView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:scrollbars="vertical" />
+
+            <!-- "No results" text -->
+            <TextView
+                android:visibility="invisible"
+                android:id="@+id/noResultsTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/no_results" />
+        </LinearLayout>
+
+        <!-- Circular progress indicator at the middle of the screen -->
+        <include
+            android:id="@+id/progressIndicator"
+            layout="@layout/progress_indicator" />
+    </FrameLayout>
 </LinearLayout>

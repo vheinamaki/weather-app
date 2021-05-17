@@ -14,6 +14,13 @@
     <string name="about">About</string>
     <string name="locationsearch_hint">Enter Location name</string>
     <string name="photographer_credit">Photo by %1$s on Pexels</string>
+    <string name="retry">Retry</string>
+    <string name="no_results">No results found for that query. Please enter the full name of the location.</string>
+
+    <string name="location_unavailable_title">Couldn\'t resolve device location</string>
+    <string name="location_unavailable">Device location data is unavailable. Locations can be added manually in the <i>Add Location</i> menu, accessible from the plus sign</string>
+    <string name="request_error_title">Forecast services unavailable</string>
+    <string name="request_error">An error was encountered while connecting to forecast services. Make sure that the device has a stable internet connection. If that does not help, try again later.</string>
 
     <string name="settings_units_title">Units</string>
     <string name="settings_units_celsius">°C</string>
