@@ -1,6 +1,7 @@
 package fi.tuni.genericweatherapp
 
 import android.app.Application
+import android.content.res.Resources
 import android.location.Geocoder
 import androidx.room.Room
 import dagger.hilt.android.HiltAndroidApp
@@ -17,12 +18,12 @@ class MainApplication : Application() {
         // Location database for saved locations
         database = Room.databaseBuilder(this, WeatherAppDatabase::class.java, "weather3-locations.db")
             .build()
-        // Rest of the UI is in english as well, use a static locale for consistency
-        geoCoder = Geocoder(this, Locale.ENGLISH)
+        // Resources for UI strings etc
+        res = resources
     }
 
     companion object {
         lateinit var database: WeatherAppDatabase
-        lateinit var geoCoder: Geocoder
+        lateinit var res: Resources
     }
 }

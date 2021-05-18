@@ -41,7 +41,7 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         val actionBar = supportActionBar
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
-        actionBar?.title = "Add new location"
+        actionBar?.title = resources.getString(R.string.add_location)
 
         // Configure recyclerView for listing the search results
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)

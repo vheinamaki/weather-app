@@ -6,10 +6,14 @@ import android.util.Log
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.core.JsonParseException
+import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import kotlinx.android.parcel.Parceler
 import kotlinx.android.parcel.Parcelize
 import kotlinx.android.parcel.TypeParceler
+import java.io.BufferedInputStream
+import java.net.HttpURLConnection
 import java.net.URL
 import java.net.URLEncoder
 import java.util.*
@@ -63,8 +67,6 @@ class OpenWeatherMap(
     @JsonIgnoreProperties(ignoreUnknown = true)
     data class Daily(
         var temp: DayTemps,
-        @JsonProperty("feels_like")
-        var feelsLike: DayTemps,
         var pressure: Int,
         var humidity: Int,
         @JsonProperty("wind_speed")
@@ -99,7 +101,9 @@ class OpenWeatherMap(
         var day: Double,
         @JsonProperty("eve")
         var evening: Double,
-        var night: Double
+        var night: Double,
+        var min: Double,
+        var max: Double
     )
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -118,14 +122,7 @@ class OpenWeatherMap(
         val lat: Double,
         val lon: Double,
         val country: String
-    ) {
-        constructor(dbLoc: DBLocation) : this(
-            dbLoc.name,
-            dbLoc.latitude,
-            dbLoc.longitude,
-            dbLoc.country
-        )
-    }
+    )
 
     // Get weather information from the OneCall API
     fun fetchWeather(latitude: Double, longitude: Double): RootObject {
@@ -139,7 +136,20 @@ class OpenWeatherMap(
     fun fetchCoordinates(locationName: String): Array<Location> {
         val sanitized = URLEncoder.encode(locationName, "UTF-8")
         val url = URL("$apiUrl/geo/1.0/direct?q=$sanitized&appid=$apiKey")
-        return mapper.readValue(url, Array<Location>::class.java)
+        val urlConnection = url.openConnection() as HttpURLConnection
+        urlConnection.setRequestProperty("Authorization", apiKey)
+        urlConnection.connect()
+        // API may send a 404 if the location name is invalid
+        val response = if (urlConnection.responseCode == 404) {
+            emptyArray()
+        } else {
+            mapper.readValue(
+                BufferedInputStream(urlConnection.inputStream),
+                Array<Location>::class.java
+            )
+        }
+        urlConnection.disconnect()
+        return response
     }
 
     // Get location name with coordinates from the reverse geocoding API

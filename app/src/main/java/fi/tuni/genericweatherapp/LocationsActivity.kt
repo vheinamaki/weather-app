@@ -12,6 +12,7 @@ import android.view.View
 import android.widget.TextView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.LocationServices
@@ -34,6 +35,16 @@ class LocationsActivity : AppCompatActivity() {
 
     private var adapter = SavedLocationAdapter()
 
+    private lateinit var currentLocationItem: DBLocation
+
+    // Set the default click listener, assuming that user's location hasn't been fetched yet
+    private var currentLocationCallback = {
+        val returnIntent = Intent()
+        returnIntent.putExtra("requestLocal", true)
+        setResult(Activity.RESULT_OK, returnIntent)
+        finish()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityLocationsBinding.inflate(layoutInflater)
@@ -44,28 +55,38 @@ class LocationsActivity : AppCompatActivity() {
         val actionBar = supportActionBar
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
+        actionBar?.title = resources.getString(R.string.manage_locations)
 
         // Configure recyclerView
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = layoutManager
+        binding.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+            )
+        )
         binding.recyclerView.adapter = adapter
 
-        // Configure current location button
-        // Set current location item's text to "Current location (Unknown)", update it later
-        binding.currentLocationItem.text =
-            resources.getString(R.string.current_location, resources.getString(R.string.unknown))
-        // Set the default click listener, assuming that user's location hasn't been fetched yet
-        binding.currentLocationItem.setOnClickListener {
-            val returnIntent = Intent()
-            returnIntent.putExtra("requestLocal", true)
-            setResult(Activity.RESULT_OK, returnIntent)
-            finish()
-        }
+        // Configure current location item
+        // Set current location item's name to "Unknown", update it later
+        currentLocationItem = DBLocation(
+            -1,
+            resources.getString(R.string.current_location),
+            0.0,
+            0.0,
+            resources.getString(R.string.unknown)
+        )
 
         // Click listener for the listed locations
         // Sends the name and the coordinates of the selected location to MainActivity
         adapter.locationClickedListener = {
-            finishWithCoordinates(it.latitude, it.longitude)
+            // Special handling for current location with unknown coordinates
+            if (it.uid == -1) {
+                currentLocationCallback()
+            } else {
+                finishWithCoordinates(it.latitude, it.longitude)
+            }
         }
 
         adapter.deleteButtonClickedListener = {
@@ -84,15 +105,24 @@ class LocationsActivity : AppCompatActivity() {
 
         // Listen for changes in the database, update listed locations in recyclerView
         locationRepo.locations.observe(this) { locations ->
-            adapter.setItems(locations)
+            // Add currentLocationItem as the first item, and locations as the rest
+            val adapterItems = mutableListOf(currentLocationItem)
+            adapterItems.addAll(locations)
+            adapter.setItems(adapterItems)
         }
 
         // Listen for changes in the current GPS location
         locationRepo.getCurrentLocation().observe(this) { location ->
-            Log.d("weatherDebug", "current GPS location: $location")
-            binding.currentLocationItem.text =
-                resources.getString(R.string.current_location, location.name)
-            binding.currentLocationItem.setOnClickListener {
+            Log.d("weatherDebug", "current GPS location: ${location.name}")
+            currentLocationItem = DBLocation(
+                -1,
+                resources.getString(R.string.current_location),
+                0.0,
+                0.0,
+                location.name
+            )
+            adapter.set(0, currentLocationItem)
+            currentLocationCallback = {
                 finishWithCoordinates(location.latitude, location.longitude)
             }
         }

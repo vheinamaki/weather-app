@@ -11,5 +11,5 @@
         android:layout_centerInParent="true"
         android:contentDescription="Loading weather..."
         android:indeterminate="true"
-        app:indicatorColor="#000000" />
+        app:indicatorColor="?attr/colorSecondary" />
 </RelativeLayout>

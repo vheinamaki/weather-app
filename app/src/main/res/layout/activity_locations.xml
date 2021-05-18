@@ -11,20 +11,11 @@
         android:id="@+id/toolbar"
         layout="@layout/toolbar" />
 
-    <!-- Current GPS location -->
-    <TextView
-        android:id="@+id/currentLocationItem"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:clickable="true"
-        android:focusable="true"
-        android:text="" />
-
     <!-- Location list -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:layout_margin="16dp"
         android:scrollbars="vertical" />
 

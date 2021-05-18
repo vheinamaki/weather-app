@@ -2,9 +2,10 @@
     <string name="app_name">Generic Weather App</string>
     <string name="loading">Loading…</string>
     <string name="locations">Locations</string>
-    <string name="current_location">Current location (%1$s)</string>
+    <string name="current_location">Current Location</string>
     <string name="unknown">Unknown</string>
     <string name="delete">Delete</string>
+    <string name="add_location">Add New Location</string>
     <string name="confirm_delete_title">Confirm Delete</string>
     <string name="confirm_delete_description">%1$s will be removed from saved locations.</string>
     <string name="confirm_delete_ok">Confirm</string>
@@ -16,6 +17,9 @@
     <string name="photographer_credit">Photo by %1$s on Pexels</string>
     <string name="retry">Retry</string>
     <string name="no_results">No results found for that query. Please enter the full name of the location.</string>
+    <string name="today">Today</string>
+    <string name="feels_like">Feels like %1$s</string>
+    <string name="humidity">Humidity: %1$s</string>
 
     <string name="location_unavailable_title">Couldn\'t resolve device location</string>
     <string name="location_unavailable">Device location data is unavailable. Locations can be added manually in the <i>Add Location</i> menu, accessible from the plus sign</string>

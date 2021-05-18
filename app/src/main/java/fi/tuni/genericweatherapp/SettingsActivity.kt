@@ -24,7 +24,7 @@ class SettingsActivity : AppCompatActivity() {
         val actionBar = supportActionBar
         actionBar?.setHomeAsUpIndicator(R.drawable.ic_baseline_arrow_back_24)
         actionBar?.setDisplayHomeAsUpEnabled(true)
-        actionBar?.title = "Settings"
+        actionBar?.title = resources.getString(R.string.settings)
 
         supportFragmentManager
             .beginTransaction()

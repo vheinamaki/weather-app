@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Weather view linearlayout layered on top of bg image imageview -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Weather scroll view layered on top of background image view -->
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="match_parent"
@@ -11,89 +12,133 @@
         android:contentDescription="@null"
         android:scaleType="centerCrop" />
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="16dp"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_margin="16dp"
+            android:orientation="vertical">
 
             <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorWeatherBackground"
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tempTextView"
+                    android:id="@+id/currentDayText"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:shadowColor="@color/colorTextShadow"
-                    android:shadowRadius="4"
-                    android:text="@string/loading"
-                    android:textColor="@color/colorFont"
-                    android:textSize="48sp"
-                    android:textStyle="bold" />
+                    android:layout_marginStart="4dp"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/colorWeatherText" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="4dp">
+
+                    <ImageView
+                        app:tint="@color/colorWeatherText"
+                        android:id="@+id/weatherImage"
+                        android:layout_width="64sp"
+                        android:layout_height="64sp"
+                        android:layout_alignParentStart="true"
+                        android:layout_margin="4dp" />
+
+                    <TextView
+                        android:id="@+id/tempTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toEndOf="@+id/weatherImage"
+                        android:textColor="@color/colorWeatherText"
+                        android:textSize="48sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_alignParentBottom="true"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/description"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/colorWeatherText"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/feelsLike"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/colorWeatherText"
+                            android:textSize="14sp" />
+
+                        <TextView
+                            android:id="@+id/precipitation"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="end"
+                            android:textColor="@color/colorWeatherText"
+                            android:textSize="14sp" />
+
+                    </LinearLayout>
+                </RelativeLayout>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/hourlyRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@color/colorWeatherBackground"
+                android:scrollbars="horizontal" />
+
+            <LinearLayout
+                android:id="@+id/dailyWeatherList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:background="@color/colorWeatherBackground"
+                android:orientation="vertical" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@color/colorWeatherBackground"
+                android:orientation="vertical"
+                android:padding="8dp">
 
                 <TextView
-                    android:id="@+id/descriptionTextView"
-                    android:layout_width="wrap_content"
+                    android:id="@+id/photographerTextView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:shadowColor="@color/colorTextShadow"
-                    android:shadowRadius="4"
                     android:text=""
-                    android:textColor="@color/colorFont"
-                    android:textSize="18sp"
+                    android:textColor="@color/colorWeatherText"
+                    android:textSize="16sp"
                     android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/linkTextView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:autoLink="web"
+                    android:linksClickable="true"
+                    android:text=""
+                    android:textSize="14sp" />
             </LinearLayout>
+
         </LinearLayout>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/hourlyRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:background="@color/colorBackground"
-            android:scrollbars="horizontal" />
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/dailyRecyclerView"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:background="#88000000"
-            android:scrollbars="vertical" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:id="@+id/photographerTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:shadowColor="@color/colorTextShadow"
-                android:shadowRadius="4"
-                android:text=""
-                android:textColor="@color/colorFont"
-                android:textSize="16sp"
-                android:textStyle="italic" />
-
-            <TextView
-                android:id="@+id/linkTextView"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:autoLink="web"
-                android:linksClickable="true"
-                android:shadowColor="@color/colorTextShadow"
-                android:shadowRadius="4"
-                android:text=""
-                android:textSize="14sp" />
-        </LinearLayout>
-
-    </LinearLayout>
+    </ScrollView>
 
 </FrameLayout>

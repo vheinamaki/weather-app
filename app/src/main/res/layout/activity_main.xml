@@ -37,6 +37,7 @@
 
     <!-- Navigation menu -->
     <com.google.android.material.navigation.NavigationView
+        android:background="#F5F5F6"
         android:id="@+id/navigationView"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"

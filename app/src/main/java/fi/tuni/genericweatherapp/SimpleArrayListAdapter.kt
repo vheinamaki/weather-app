@@ -40,6 +40,15 @@ abstract class SimpleArrayListAdapter<T, E : RecyclerView.ViewHolder>(
         notifyDataSetChanged()
     }
 
+    fun set(index: Int, item: T) {
+        if (data.isEmpty()) {
+            data.add(item)
+        } else {
+            data[index] = item
+        }
+        notifyDataSetChanged()
+    }
+
     // Replace the data set
     fun setItems(items: List<T>) {
         data.clear()

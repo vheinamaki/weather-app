@@ -14,6 +14,20 @@ import com.google.android.gms.location.*
 // Location request timeout; If it takes more than 15 seconds then fire error callback
 private const val TIMEOUT = 15000L
 
+// Get icon resources for open weather map weather icon names
+fun weatherIconToDrawableResource(iconName: String): Int {
+    return when (iconName) {
+        "01d", "01n" -> R.drawable.day_sunny
+        "02d", "02n" -> R.drawable.day_cloudy
+        "03d", "03n" -> R.drawable.cloud
+        "04d", "04n" -> R.drawable.cloudy
+        "09d", "09n" -> R.drawable.showers
+        "10d", "10n" -> R.drawable.rain
+        "11d", "11n" -> R.drawable.thunderstorm
+        "13d", "13n" -> R.drawable.snow
+        else -> R.drawable.fog
+    }
+}
 
 // One-time location request with automatic cancellation timeout
 @SuppressLint("MissingPermission")

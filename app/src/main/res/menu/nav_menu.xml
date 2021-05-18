@@ -7,6 +7,9 @@
 
         <menu>
             <item
+                android:id="@+id/navAddLocation"
+                android:title="@string/add_location" />
+            <item
                 android:id="@+id/navManageLocations"
                 android:title="@string/manage_locations" />
         </menu>
@@ -15,8 +18,4 @@
     <item
         android:id="@+id/navSettings"
         android:title="@string/settings" />
-
-    <item
-        android:id="@+id/navAbout"
-        android:title="@string/about" />
 </menu>

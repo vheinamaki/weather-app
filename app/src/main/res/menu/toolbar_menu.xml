@@ -4,6 +4,6 @@
     <item
         android:id="@+id/toolbarAddLocation"
         android:icon="@drawable/ic_baseline_add_24"
-        android:title="Add Location"
+        android:title="@string/add_location"
         app:showAsAction="always" />
 </menu>

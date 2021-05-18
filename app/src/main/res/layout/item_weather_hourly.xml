@@ -1,20 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
+    android:gravity="center"
+    android:layout_margin="4dp"
     android:orientation="vertical">
 
     <TextView
         android:id="@+id/timeTextView"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:padding="4dp"
+        android:textColor="@color/colorWeatherText"
         android:textSize="16sp" />
 
+    <ImageView
+        app:tint="@color/colorWeatherText"
+        android:id="@+id/imageView"
+        android:layout_width="48sp"
+        android:layout_height="48sp"
+        android:adjustViewBounds="true"
+        android:scaleType="fitCenter" />
+
     <TextView
-        android:id="@+id/descriptionTextView"
-        android:layout_width="match_parent"
+        android:id="@+id/tempTextView"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:padding="10dp"
+        android:padding="4dp"
+        android:textColor="@color/colorWeatherText"
         android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <ImageView
+            app:tint="@color/colorWeatherText"
+            android:id="@+id/humidityImageView"
+            android:layout_width="24sp"
+            android:layout_height="24sp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/humidity"
+            android:scaleType="fitCenter"
+            android:src="@drawable/raindrop" />
+
+        <TextView
+            android:id="@+id/humidityTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorWeatherText"
+            android:textSize="16sp" />
+    </LinearLayout>
 </LinearLayout>

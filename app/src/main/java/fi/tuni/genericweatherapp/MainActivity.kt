@@ -208,6 +208,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.navSettings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
             }
+            R.id.navAddLocation -> {
+                changeLocation.launch(Intent(this, AddLocationActivity::class.java))
+            }
         }
         binding.root.closeDrawer(GravityCompat.START)
         return true

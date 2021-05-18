@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/savedLocationItem"
+    android:id="@+id/locationItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?android:attr/selectableItemBackground"
@@ -8,7 +8,7 @@
     android:focusable="true" >
 
     <ImageView
-        android:id="@+id/itemIcon"
+        android:id="@+id/locationIcon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"
@@ -19,25 +19,26 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        android:layout_toEndOf="@+id/itemIcon"
+        android:layout_toEndOf="@+id/locationIcon"
         android:padding="10dp">
 
         <TextView
-            android:id="@+id/savedLocationNameTextView"
+            android:id="@+id/locationTitleText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textStyle="bold"
             android:textSize="16sp" />
 
         <TextView
-            android:id="@+id/savedLocationCountryTextView"
+            android:id="@+id/locationDescriptionText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="14sp" />
     </LinearLayout>
 
     <ImageButton
-        android:id="@+id/savedLocationDeleteButton"
+        android:visibility="gone"
+        android:id="@+id/locationDeleteButton"
         android:padding="8dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
