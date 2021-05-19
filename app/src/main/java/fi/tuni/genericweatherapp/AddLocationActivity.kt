@@ -19,23 +19,34 @@ import javax.inject.Inject
 import kotlin.concurrent.thread
 
 /**
- * Activity for adding new locations to the saved locations list
+ * Activity for adding new locations to the saved locations list.
  */
 @AndroidEntryPoint
 class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener {
+
+    /**
+     * LocationRepository injected as dependency, used to insert new locations into the database.
+     */
     @Inject
     lateinit var locationRepo: LocationRepository
 
+    /**
+     * View binding for the activity.
+     */
     lateinit var binding: ActivityAddLocationBinding
 
+    /**
+     * RecyclerView adapter for the search results list.
+     */
     private val adapter = LocationSearchAdapter()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Setup view binding
         binding = ActivityAddLocationBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Progress indicator initially hidden
+        // Loading icon initially hidden
         binding.progressIndicator.spinner.hide()
 
         // Configure the toolbar
@@ -58,15 +69,17 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
             // The result is used if the location was started from main activity, which will
             // Then make a request to its ViewModel to change the location.
             val returnIntent = Intent()
-            returnIntent.putExtra("locationName", it.name)
             returnIntent.putExtra("latitude", it.lat)
             returnIntent.putExtra("longitude", it.lon)
             setResult(Activity.RESULT_OK, returnIntent)
             finish()
         }
 
+        // Set the search view as opened
         binding.searchView.setIconifiedByDefault(false)
+        // Focus onto the search view, open keyboard
         binding.searchView.requestFocus()
+        // Register the activity as the query listener
         binding.searchView.setOnQueryTextListener(this)
     }
 
@@ -79,12 +92,18 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         return super.onOptionsItemSelected(item)
     }
 
-    // Make a query to the OpenWeatherMap API to receive matching locations,
-    // and add them to the recyclerView via its adapter
+    /**
+     * Make a query to the OpenWeatherMap API to receive matching locations,
+     * and add them to the recyclerView via its adapter.
+     *
+     * @param query The query string to make the location search with.
+     */
     private fun searchLocation(query: String) {
         binding.noResultsTextView.isVisible = false
+        // Show the loading icon
         binding.progressIndicator.spinner.show()
         thread {
+            // Make a request to geocoding API
             val weather = OpenWeatherMap(OPENWEATHERMAP_APIKEY)
             val locations = try {
                 weather.fetchCoordinates(query)
@@ -92,27 +111,25 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
                 null
             }
             runOnUiThread {
+                // Hide loading icon when the request finishes
                 binding.progressIndicator.spinner.hide()
                 if (locations != null) {
+                    // Fill the adapter's list with the received locations
                     adapter.setItems(locations.toList())
                     if (locations.isEmpty()) {
+                        // Show a text telling that there were no matching results
                         binding.noResultsTextView.isVisible = true
                     }
                 } else {
-                    AlertDialog.Builder(this)
-                        .setTitle(R.string.request_error_title)
-                        .setMessage(R.string.request_error)
-                        .setNeutralButton("OK") { dialog, _ ->
-                            dialog.dismiss()
-                        }
-                        .show()
+                    // Show error message if the request fails
+                    showAlert(this, R.string.request_error_title, R.string.request_error)
                 }
             }
         }
     }
 
-    // Make a search when the user pressed the submit button
     override fun onQueryTextSubmit(query: String?): Boolean {
+        // Make a search when the user presses the submit button
         if (query != null) {
             searchLocation(query)
         }
@@ -120,5 +137,6 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         return false
     }
 
+    // Implementation required by the interface, but not needed by the activity
     override fun onQueryTextChange(newText: String?) = false
 }

@@ -18,21 +18,37 @@ import fi.tuni.genericweatherapp.databinding.ActivityLocationsBinding
 import javax.inject.Inject
 
 /**
- * Lists the locations the user has saved to the database
+ * Lists the locations the user has saved to the database.
  */
 @AndroidEntryPoint
 class LocationsActivity : AppCompatActivity() {
+
+    /**
+     * LocationRepository dependency to observe the database.
+     */
     @Inject
     lateinit var locationRepo: LocationRepository
 
+    /**
+     * View binding for the activity.
+     */
     lateinit var binding: ActivityLocationsBinding
 
+    /**
+     * RecyclerView adapter used by the location list.
+     */
     private var adapter = SavedLocationAdapter()
 
+    /**
+     * A separate location item for the user's geolocation.
+     */
     private lateinit var currentLocationItem: DBLocation
 
-    // Set the default click listener, assuming that user's location hasn't been fetched yet
+    /**
+     * Click listener for [currentLocationItem]
+     */
     private var currentLocationCallback = {
+        // Set the default click listener, assuming that user's location hasn't been fetched yet
         val returnIntent = Intent()
         returnIntent.putExtra("requestLocal", true)
         setResult(Activity.RESULT_OK, returnIntent)
@@ -41,6 +57,7 @@ class LocationsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Setup view binding
         binding = ActivityLocationsBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -54,6 +71,7 @@ class LocationsActivity : AppCompatActivity() {
         // Configure recyclerView
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = layoutManager
+        // Add a divider between the list items
         binding.recyclerView.addItemDecoration(
             DividerItemDecoration(
                 this,
@@ -63,7 +81,8 @@ class LocationsActivity : AppCompatActivity() {
         binding.recyclerView.adapter = adapter
 
         // Configure current location item
-        // Set current location item's name to "Unknown", update it later
+        // Set current location item's name to "Unknown", update it later when/if user's geolocation
+        // is available
         currentLocationItem = DBLocation(
             -1,
             resources.getString(R.string.current_location),
@@ -73,9 +92,9 @@ class LocationsActivity : AppCompatActivity() {
         )
 
         // Click listener for the listed locations
-        // Sends the name and the coordinates of the selected location to MainActivity
+        // Sends the coordinates of the selected location to MainActivity
         adapter.locationClickedListener = {
-            // Special handling for current location with unknown coordinates
+            // Special handling for current location item, trigger its own callback
             if (it.uid == -1) {
                 currentLocationCallback()
             } else {
@@ -83,6 +102,8 @@ class LocationsActivity : AppCompatActivity() {
             }
         }
 
+        // Click listener for the delete buttons
+        // Show a confirmation dialog before deleting
         adapter.deleteButtonClickedListener = {
             AlertDialog.Builder(this)
                 .setTitle(R.string.confirm_delete_title)
@@ -105,9 +126,9 @@ class LocationsActivity : AppCompatActivity() {
             adapter.setItems(adapterItems)
         }
 
-        // Listen for changes in the current GPS location
+        // Listen for changes in the current geolocation
         locationRepo.getCurrentLocation().observe(this) { location ->
-            Log.d("weatherDebug", "current GPS location: ${location.name}")
+            // Update currentLocationItem with the new location's name
             currentLocationItem = DBLocation(
                 -1,
                 resources.getString(R.string.current_location),
@@ -115,13 +136,21 @@ class LocationsActivity : AppCompatActivity() {
                 0.0,
                 location.name
             )
+            // Replace old currentLocationItem in the list view
             adapter.setFirst(currentLocationItem)
+            // Update the callback now that the location is known
             currentLocationCallback = {
                 finishWithCoordinates(location.latitude, location.longitude)
             }
         }
     }
 
+    /**
+     * Finish the activity and send the specified coordinates back to the launching activity.
+     *
+     * @param latitude Latitude to send back with the intent.
+     * @param longitude longitude to send back with the intent.
+     */
     private fun finishWithCoordinates(latitude: Double, longitude: Double) {
         val returnIntent = Intent()
         returnIntent.putExtra("latitude", latitude)
@@ -140,11 +169,13 @@ class LocationsActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Toolbar click events
         when (item.itemId) {
+            // Back arrow clicked, finish the activity
             android.R.id.home -> {
                 setResult(Activity.RESULT_CANCELED)
                 finish()
                 return true
             }
+            // + button clicked
             R.id.toolbarAddLocation -> {
                 // Start the location-adding activity
                 startActivity(Intent(this, AddLocationActivity::class.java))

@@ -23,21 +23,35 @@ import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import javax.inject.Inject
 
 /**
- * Application's main activity, shows a weather forecast
+ * Application's main activity, displays initially [SplashScreenFragment] and then
+ * [WeatherFragment] when the forecast has been fetched.
+ *
  */
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
+
+    /**
+     *  WeatherRepository injected by Hilt for observing its LiveData.
+     */
     @Inject
     lateinit var weatherRepo: WeatherRepository
 
-    // Access the ViewModel to observe for changes in its data
+    /**
+     * The Activity's ViewModel, used to observe changes in its data.
+     */
     private val model: WeatherViewModel by viewModels()
 
-    // Auto-generated view binding class (replaces findViewById calls)
+    /**
+     * Auto-generated view binding class (replaces findViewById calls).
+     */
     lateinit var binding: ActivityMainBinding
 
-    // Location-changing activity launcher, used to receive the new location
-    // Used by LocationsActivity and AddLocationActivity to send back the selected location
+    /**
+     * Location-changing activity launcher, and callback that is fired when the launched activity
+     * returns a result.
+     *
+     * Used by LocationsActivity and AddLocationActivity to send back the selected location.
+     */
     private val changeLocation =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
             // RESULT_OK is received if a location was selected in the started activity
@@ -46,10 +60,13 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 val bundle = it.data?.extras
                 if (bundle != null) {
                     // Request the ViewModel to update the current location
+                    // See if the request should be done with geolocation or not
                     val localRequest = bundle.getBoolean("requestLocal", false)
                     if (localRequest) {
+                        // Make a location request to request for geolocation
                         requestLocalForecast()
                     } else {
+                        // Otherwise make a request with the returned coordinates
                         val lat = bundle.getDouble("latitude")
                         val lon = bundle.getDouble("longitude")
                         model.requestForecast(lat, lon)
@@ -58,25 +75,28 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+    /**
+     * Activity launcher for asking geolocation permission.
+     */
     private val askLocationPermission = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
             // Permission granted, make request
             makeLocationRequest()
-        } else {
-            // Rejected
-            Log.d("weatherDebug", "Location permission rejected")
         }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // Setup view binding
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Hide the loading icon by default
         binding.progressIndicator.spinner.hide()
 
+        // Show the splash screen at start
         supportFragmentManager.commit {
             setReorderingAllowed(true)
             replace(R.id.mainFragment, SplashScreenFragment::class.java, null)
@@ -114,6 +134,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
         }
 
+        // Switch the fragment to WeatherFragment when the forecast request has finished
         model.getWeather().observe(this) { data ->
             // Change toolbar title to location name
             toolbar.title = data.locationName
@@ -135,6 +156,10 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         requestLocalForecast()
     }
 
+    /**
+     * Make a geolocation request, and a forecast request for the received coordinates
+     * if it succeeds. Otherwise show an alert dialog with an error message.
+     */
     private fun makeLocationRequest() {
         // Get current location with Fused
         val fusedClient = LocationServices.getFusedLocationProviderClient(this)
@@ -153,6 +178,9 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
+    /**
+     * Ask for location permissions and call [makeLocationRequest] if they were granted.
+     */
     private fun requestLocalForecast() {
         val perm = Manifest.permission.ACCESS_FINE_LOCATION
         val alreadyGranted =
@@ -162,6 +190,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             // Permission has already been granted, make request
             makeLocationRequest()
         } else {
+            // Launch the permission asking activity
             askLocationPermission.launch(perm)
         }
     }
@@ -175,10 +204,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         // Toolbar click events
         when (item.itemId) {
+            // Navigation drawer button clicked, open the drawer
             android.R.id.home -> {
                 binding.root.openDrawer(GravityCompat.START)
                 return true
             }
+            // + button clicked
             R.id.toolbarAddLocation -> {
                 // Start the location-adding activity and trigger the result callback when done
                 changeLocation.launch(Intent(this, AddLocationActivity::class.java))
@@ -191,16 +222,20 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         // Navigation drawer click events
         when (item.itemId) {
+            // 'Manage Locations' option
             R.id.navManageLocations -> {
                 changeLocation.launch(Intent(this, LocationsActivity::class.java))
             }
+            // Settings option
             R.id.navSettings -> {
                 startActivity(Intent(this, SettingsActivity::class.java))
             }
+            // 'Add Location' option
             R.id.navAddLocation -> {
                 changeLocation.launch(Intent(this, AddLocationActivity::class.java))
             }
         }
+        // Close the navigation drawer when an item was selected
         binding.root.closeDrawer(GravityCompat.START)
         return true
     }

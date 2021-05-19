@@ -17,6 +17,10 @@ import javax.inject.Inject
  *
  * Responsible for serving weather data to MainActivity and forwarding location change requests to
  * WeatherRepository.
+ *
+ * @property weatherRepo injected by Hilt as a dependency. Used to Request forecasts.
+ * @property locationRepo injected by Hilt as a dependency. Used to send the user's current
+ * geolocation to the LocationRepository so that other views can access it.
  */
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
@@ -32,7 +36,7 @@ class WeatherViewModel @Inject constructor(
         // Set weatherRepo's temperature units from preferences, or depending on the default locale
         // if the preference has not been set.
         val defaultUnits =
-            if (Locale.getDefault().usesFahrenheit()) "imperial" else "metric"
+            if (Locale.getDefault().usesFahrenheits()) "imperial" else "metric"
         val unitsPref = preferences.getString("units", defaultUnits) ?: defaultUnits
         val usedUnits =
             if (unitsPref in listOf(
@@ -49,24 +53,49 @@ class WeatherViewModel @Inject constructor(
         // TODO: Get the last viewed location and request forecast for it, or for local coordinates
     }
 
+    /**
+     * LiveData which gets updated with forecasts as they are requested.
+     */
     private val liveWeather = MutableLiveData<WeatherRepository.WeatherPacket>()
-
-    private val loading = MutableLiveData<Boolean>()
-
-    private val loadingError = MutableLiveData<Boolean>()
-
-    fun isLoading(): LiveData<Boolean> = loading
-
-    fun didLoadingFail(): LiveData<Boolean> = loadingError
-
-    // Exposes immutable version of the live data to the observing activity
+    /**
+     * Exposes immutable version of [liveWeather] to observers.
+     */
     fun getWeather(): LiveData<WeatherRepository.WeatherPacket> {
         return liveWeather
     }
 
-    // Forward location change request to WeatherRepository and then update
-    // currentLocation determines whether or not to cache this as the user's GPS location, which
-    // can be then shown in the location list as the current location
+    /**
+     * Updated with true and false when forecast fetching begins and ends.
+     */
+    private val loading = MutableLiveData<Boolean>()
+
+    /**
+     * Exposes immutable version of [loading]. Used to determine whether a loading icon
+     * should be shown.
+     */
+    fun isLoading(): LiveData<Boolean> = loading
+
+    /**
+     * Updated with true when there is an error fetching a forecast,
+     * and false when fetching succeeds.
+     */
+    private val loadingError = MutableLiveData<Boolean>()
+
+    /**
+     * Exposes immutable version of [loadingError]. Used to display an error message
+     * when request fails.
+     */
+    fun didLoadingFail(): LiveData<Boolean> = loadingError
+
+    /**
+     * Make a forecast request with the given latitude and longitude. The forecast is posted to
+     * the [liveWeather] object when done.
+     *
+     * @param latitude Latitude of the location.
+     * @param longitude Longitude of the location.
+     * @param currentLocation whether or not to cache this as the user's geolocation, which
+     * can be then shown in the saved locations list as the current location.
+     */
     fun requestForecast(latitude: Double, longitude: Double, currentLocation: Boolean = false) {
         loading.value = true
         weatherRepo.fetchWeatherAsync(latitude, longitude) {
@@ -85,10 +114,16 @@ class WeatherViewModel @Inject constructor(
         }
     }
 
+    /**
+     * Make a forecast request with the same location as previously.
+     */
     fun refreshForecast() {
         requestForecast(weatherRepo.previousLatitude, weatherRepo.previousLongitude)
     }
 
+    /**
+     * @return Temperature symbol for the units currently used by [weatherRepo].
+     */
     fun getUnitsSymbol(): String = when (weatherRepo.units) {
         "metric" -> "°C"
         "imperial" -> "°F"

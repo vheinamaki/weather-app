@@ -10,6 +10,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import fi.tuni.genericweatherapp.databinding.ActivitySettingsBinding
 
+/**
+ * Host activity for the settings fragment.
+ */
 @AndroidEntryPoint
 class SettingsActivity : AppCompatActivity() {
     lateinit var binding: ActivitySettingsBinding
@@ -26,6 +29,7 @@ class SettingsActivity : AppCompatActivity() {
         actionBar?.setDisplayHomeAsUpEnabled(true)
         actionBar?.title = resources.getString(R.string.settings)
 
+        // Show the settings fragment
         supportFragmentManager
             .beginTransaction()
             .replace(R.id.settingsFragmentContainer, SettingsFragment())

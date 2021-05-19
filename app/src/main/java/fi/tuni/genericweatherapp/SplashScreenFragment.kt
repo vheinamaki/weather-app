@@ -10,16 +10,29 @@ import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResultListener
 import fi.tuni.genericweatherapp.databinding.FragmentSplashScreenBinding
 
+/**
+ * The fragment view shown initially when the app is launched.
+ *
+ * Shows the app's title, and a 'retry' button if a connection error is encountered.
+ */
 class SplashScreenFragment : Fragment(R.layout.fragment_weather) {
+
+    /**
+     * Get reference to the activity's ViewModel to observe its data.
+     */
     private val model: WeatherViewModel by activityViewModels()
 
-    lateinit var binding: FragmentSplashScreenBinding
+    /**
+     * ViewBinding for the fragment.
+     */
+    private lateinit var binding: FragmentSplashScreenBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // Setup view binding
         binding = FragmentSplashScreenBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -28,12 +41,17 @@ class SplashScreenFragment : Fragment(R.layout.fragment_weather) {
         super.onViewCreated(view, savedInstanceState)
         binding.retryButton.setOnClickListener(this::onRetryButtonClicked)
 
+        // Listen for fragment results sent by the host activity
         setFragmentResultListener("showButtons") { _, bundle ->
+            // Make the retry button visible
             binding.retryButton.isVisible = bundle.getBoolean("retryButton", false)
         }
     }
 
-    fun onRetryButtonClicked(view: View) {
+    /**
+     * Attempts to retry the request by refreshing the forecast.
+     */
+    private fun onRetryButtonClicked(view: View) {
         model.refreshForecast()
     }
 }

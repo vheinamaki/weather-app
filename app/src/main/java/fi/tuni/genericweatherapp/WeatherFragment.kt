@@ -21,28 +21,43 @@ import kotlin.math.roundToInt
 class WeatherFragment : Fragment(R.layout.fragment_weather) {
     private val model: WeatherViewModel by activityViewModels()
 
-    // Locale-dependant date format
+    /**
+     * Format as date, without time.
+     */
     private val dateFmt = SimpleDateFormat.getDateInstance(DateFormat.MEDIUM, Locale.ENGLISH)
 
-    // Format as hours and minutes
+    /**
+     * Format as hours and minutes.
+     */
     private val timeFmt = SimpleDateFormat.getTimeInstance(DateFormat.SHORT, Locale.ENGLISH)
 
-    // Format as day of the week
+    /**
+     * Format as day of the week.
+     */
     private val weekdayFmt = SimpleDateFormat("EEEE", Locale.ENGLISH)
 
-    // Used to check if two Date objects have the same date
+    /**
+     * Used to check if two Date objects have the same date.
+     */
     private val sameDateFmt = SimpleDateFormat("yyyyMMdd", Locale.ENGLISH)
 
-    // Adapter used by recyclerView
+    /**
+     * Adapter used by hourly forecast RecyclerView.
+     */
     private val hourlyWeatherAdapter = HourlyWeatherAdapter()
 
-    lateinit var binding: FragmentWeatherBinding
+    /**
+     * ViewBinding for the fragment. Replaces findViewById calls with properties available on
+     * the auto-generated binding class.
+     */
+    private lateinit var binding: FragmentWeatherBinding
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        // Setup view binding
         binding = FragmentWeatherBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -91,6 +106,12 @@ class WeatherFragment : Fragment(R.layout.fragment_weather) {
         }
     }
 
+    /**
+     * Helper function to fill the daily weather list with data.
+     *
+     * @param items The items to insert into the list.
+     * @param tempSymbol The temperature symbol the items should use.
+     */
     private fun fillDailyWeather(items: Array<OpenWeatherMap.Daily>, tempSymbol: String) {
         val now = Date()
         binding.dailyWeatherList.removeAllViews()

@@ -59,9 +59,9 @@ enum class PhotoCollection(val id: String) {
 }
 
 /**
- * @return Whether or not the locale's country measures temperature in fahrenheits.
+ * @return Whether or not the locale's country measures temperature in Fahrenheits.
  */
-fun Locale.usesFahrenheit() = this.country in fahrenheitUsers
+fun Locale.usesFahrenheits() = this.country in fahrenheitUsers
 
 /**
  * A list of ISO alpha 2 country codes for countries which measure temperature
