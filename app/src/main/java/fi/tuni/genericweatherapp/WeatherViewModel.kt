@@ -30,7 +30,6 @@ class WeatherViewModel @Inject constructor(
     AndroidViewModel(application) {
 
     init {
-        Log.d("weatherDebug", "ViewModel init")
         val preferences = PreferenceManager.getDefaultSharedPreferences(getApplication())
 
         // Set weatherRepo's temperature units from preferences, or depending on the default locale

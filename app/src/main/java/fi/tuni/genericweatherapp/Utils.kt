@@ -154,10 +154,6 @@ fun requestLocation(
     request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
-            Log.d(
-                "weatherDebug",
-                "Location request successful: ${result.lastLocation.latitude}, ${result.lastLocation.longitude}"
-            )
             timer.cancel()
             lambda(result)
             client.removeLocationUpdates(this)
@@ -165,7 +161,6 @@ fun requestLocation(
 
         override fun onLocationAvailability(availability: LocationAvailability) {
             val available = availability.isLocationAvailable
-            Log.d("weatherDebug", "Location available: $available")
             if (!available) {
                 timer.cancel()
                 lambda(null)
@@ -178,13 +173,11 @@ fun requestLocation(
         override fun onTick(p0: Long) {}
 
         override fun onFinish() {
-            Log.d("weatherDebug", "Timeout reached")
             lambda(null)
             client.removeLocationUpdates(callback)
         }
     }
 
     client.requestLocationUpdates(request, callback, Looper.getMainLooper())
-    Log.d("weatherDebug", "Start location request")
     timer.start()
 }

@@ -124,7 +124,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         // Listen for failed forecast requests
         model.didLoadingFail().observe(this) { didFail ->
             if (didFail) {
-                Log.d("weatherDebug", "Forecast request failed")
                 // Ask Splash Screen to show retry button
                 supportFragmentManager.setFragmentResult(
                     "showButtons",
@@ -147,7 +146,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         // Listen for changes in weather repository's unit settings
         weatherRepo.unitsChanged().observe(this) {
-            Log.d("weatherDebug", "units changed")
             // Reload forecast with new units
             model.refreshForecast()
         }
@@ -178,7 +176,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                 model.requestForecast(loc.latitude, loc.longitude, currentLocation = true)
             } else {
                 // Request timed out
-                Log.d("weatherDebug", "Location request failed")
                 showAlert(this, R.string.location_unavailable_title, R.string.location_unavailable)
             }
         }

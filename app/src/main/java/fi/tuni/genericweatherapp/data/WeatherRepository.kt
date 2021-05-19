@@ -126,13 +126,6 @@ class WeatherRepository @Inject constructor() {
             // Check whether the cache contains a forecast with identical request parameters
             val cacheResult = forecastDao.get(latitude, longitude, units).getOrNull(0)
             if (cacheResult != null && !hasExpired(cacheResult)) {
-                Log.d("weatherDebug", "Using cached result")
-                val remaining =
-                    (FORECAST_CACHE_AGE_MILLIS - (System.currentTimeMillis() - cacheResult.timeStamp)) / 60000.0
-                Log.d(
-                    "weatherDebug",
-                    "Cache time remaining: $remaining min"
-                )
                 // If a cached forecast exists and has not expired, use it instead of
                 // requesting a new one. Attempt to fetch the bitmap.
                 val packet = try {
@@ -149,7 +142,6 @@ class WeatherRepository @Inject constructor() {
                 // Call the lambda argument with the cached packet
                 lambda(packet)
             } else {
-                Log.d("weatherDebug", "Making new request")
                 // If no cached forecast exists or it has expired, request a new one
                 val packet = try {
                     // Get the forecast
