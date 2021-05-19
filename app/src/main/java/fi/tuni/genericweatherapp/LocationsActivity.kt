@@ -115,7 +115,7 @@ class LocationsActivity : AppCompatActivity() {
                 0.0,
                 location.name
             )
-            adapter.set(0, currentLocationItem)
+            adapter.setFirst(currentLocationItem)
             currentLocationCallback = {
                 finishWithCoordinates(location.latitude, location.longitude)
             }

@@ -11,11 +11,18 @@ import fi.tuni.genericweatherapp.R
 import java.util.*
 
 /**
- * RecyclerView adapter for locations listed in the location search list
+ * RecyclerView adapter for locations listed in the saved locations list.
  */
 class SavedLocationAdapter :
     SimpleArrayListAdapter<DBLocation, SavedLocationAdapter.Holder>(R.layout.item_location) {
+    /**
+     * Callback to fire when an item in the list is clicked.
+     */
     var locationClickedListener: ((DBLocation) -> Unit)? = null
+
+    /**
+     * Callback to fire when the delete button of a list item is clicked
+     */
     var deleteButtonClickedListener: ((DBLocation) -> Unit)? = null
 
     class Holder(view: View) : RecyclerView.ViewHolder(view) {
@@ -26,6 +33,8 @@ class SavedLocationAdapter :
     }
 
     override fun onBind(holder: Holder, item: DBLocation) {
+        holder.nameTextView.text = item.name
+
         // Add click listener for the item and its delete button
         holder.item.setOnClickListener {
             locationClicked(item)
@@ -33,14 +42,16 @@ class SavedLocationAdapter :
         holder.deleteButton.setOnClickListener {
             deleteButtonClicked(item)
         }
-        holder.nameTextView.text = item.name
-        // Special handling for current location
-        // Do not add a delete button and do not parse country name as ISO country code
+
         if (item.uid != -1) {
+            // Set delete button visible
             holder.deleteButton.isVisible = true
+            // Convert ISO alpha 2 code to country name and add it to the view
             holder.countryTextView.text =
                 Locale("en", item.country).getDisplayCountry(Locale.ENGLISH)
         } else {
+            // Special handling for current location (uid is -1)
+            // Do not add a delete button and do not parse country name as ISO country code
             holder.deleteButton.isVisible = false
             holder.countryTextView.text = item.country
         }
@@ -48,11 +59,32 @@ class SavedLocationAdapter :
 
     override fun holderFactory(view: View) = Holder(view)
 
+    /**
+     * Called when a location item is clicked. Fires the click listener callback if it exists.
+     *
+     * @param location The location that was clicked
+     */
     private fun locationClicked(location: DBLocation) {
         locationClickedListener?.invoke(location)
     }
 
+    /**
+     * Called when a location's delete button is clicked. Fires the delete callback if it exists.
+     *
+     * @param location The location whose delete button was clicked.
+     */
     private fun deleteButtonClicked(location: DBLocation) {
         deleteButtonClickedListener?.invoke(location)
+    }
+
+    /**
+     * Insert the item to the first index of the list.
+     */
+    fun setFirst(item: DBLocation) {
+        if (isEmpty()) {
+            add(item)
+        } else {
+            set(0, item)
+        }
     }
 }

@@ -8,6 +8,7 @@ import fi.tuni.genericweatherapp.data.OpenWeatherMap
 import fi.tuni.genericweatherapp.R
 import fi.tuni.genericweatherapp.weatherIconToDrawableResource
 import java.text.DateFormat
+import java.util.*
 import kotlin.math.roundToInt
 
 /**
@@ -15,8 +16,15 @@ import kotlin.math.roundToInt
  */
 class HourlyWeatherAdapter :
     SimpleArrayListAdapter<OpenWeatherMap.Hourly, HourlyWeatherAdapter.Holder>(R.layout.item_weather_hourly) {
+    /**
+     * Temperature symbol to use with the view items
+     */
     var symbol = ""
-    val formatter = DateFormat.getTimeInstance(DateFormat.SHORT)
+
+    /**
+     * Formats date objects as HH:MM
+     */
+    private val formatter = DateFormat.getTimeInstance(DateFormat.SHORT, Locale.ENGLISH)
 
     class Holder(view: View) : RecyclerView.ViewHolder(view) {
         val timeTextView: TextView = view.findViewById(R.id.timeTextView)
@@ -26,6 +34,7 @@ class HourlyWeatherAdapter :
     }
 
     override fun onBind(holder: Holder, item: OpenWeatherMap.Hourly) {
+        // Set the view's time, weather icon, humidity percentage and temperature from data object
         holder.timeTextView.text = formatter.format(item.time)
         holder.imageView.setImageResource(weatherIconToDrawableResource(item.icon))
         holder.humidityTextView.text = "${item.humidity}%"
