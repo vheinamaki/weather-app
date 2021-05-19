@@ -7,6 +7,7 @@ import android.os.CountDownTimer
 import android.os.Looper
 import android.util.Log
 import com.google.android.gms.location.*
+import java.util.*
 
 /**
  * Utility functions and configurable constant values.
@@ -56,6 +57,25 @@ enum class PhotoCollection(val id: String) {
     SNOW("2k6ae11"),
     MIST("o7j0pjq")
 }
+
+/**
+ * @return Whether or not the locale's country measures temperature in fahrenheits.
+ */
+fun Locale.usesFahrenheit() = this.country in fahrenheitUsers
+
+/**
+ * A list of ISO alpha 2 country codes for countries which measure temperature
+ * in degrees Fahrenheit.
+ */
+private val fahrenheitUsers = listOf(
+    "us", // U.S.
+    "bs", // Bahamas
+    "ky", // Cayman Islands
+    "lr", // Liberia
+    "pw", // Palau
+    "fm", // Micronesia
+    "mh", // Marshall Islands
+)
 
 /**
  * Maps OpenWeatherMap condition codes to photo collection IDs.

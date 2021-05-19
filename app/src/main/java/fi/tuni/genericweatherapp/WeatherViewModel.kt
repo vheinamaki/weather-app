@@ -29,19 +29,10 @@ class WeatherViewModel @Inject constructor(
         Log.d("weatherDebug", "ViewModel init")
         val preferences = PreferenceManager.getDefaultSharedPreferences(getApplication())
 
-        // Set temperature units
-        val fahrenheitUsers = listOf(
-            "us", // U.S.
-            "bs", // Bahamas
-            "ky", // Cayman Islands
-            "lr", // Liberia
-            "pw", // Palau
-            "fm", // Micronesia
-            "mh", // Marshall Islands
-        )
-
+        // Set weatherRepo's temperature units from preferences, or depending on the default locale
+        // if the preference has not been set.
         val defaultUnits =
-            if (Locale.getDefault().country in fahrenheitUsers) "imperial" else "metric"
+            if (Locale.getDefault().usesFahrenheit()) "imperial" else "metric"
         val unitsPref = preferences.getString("units", defaultUnits) ?: defaultUnits
         val usedUnits =
             if (unitsPref in listOf(
@@ -50,11 +41,12 @@ class WeatherViewModel @Inject constructor(
                     "standard"
                 )
             ) unitsPref else defaultUnits.also {
+                // Save the units in preferences as well
                 preferences.edit().putString("units", defaultUnits).apply()
             }
         weatherRepo.units = usedUnits
 
-        // Get the last viewed location and request forecast for it, or for local coordinates
+        // TODO: Get the last viewed location and request forecast for it, or for local coordinates
     }
 
     private val liveWeather = MutableLiveData<WeatherRepository.WeatherPacket>()
@@ -76,9 +68,8 @@ class WeatherViewModel @Inject constructor(
     // currentLocation determines whether or not to cache this as the user's GPS location, which
     // can be then shown in the location list as the current location
     fun requestForecast(latitude: Double, longitude: Double, currentLocation: Boolean = false) {
-        weatherRepo.changeLocation(latitude, longitude)
         loading.value = true
-        weatherRepo.fetchWeatherAsync {
+        weatherRepo.fetchWeatherAsync(latitude, longitude) {
             // Use postValue instead of setting directly, since the lambda is run on a worker thread
             loading.postValue(false)
             if (it != null) {
@@ -95,7 +86,7 @@ class WeatherViewModel @Inject constructor(
     }
 
     fun refreshForecast() {
-        requestForecast(weatherRepo.latitude, weatherRepo.longitude)
+        requestForecast(weatherRepo.previousLatitude, weatherRepo.previousLongitude)
     }
 
     fun getUnitsSymbol(): String = when (weatherRepo.units) {

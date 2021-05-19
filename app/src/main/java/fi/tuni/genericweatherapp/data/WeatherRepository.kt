@@ -12,39 +12,56 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.thread
 
-// Weather and background image handling, caching
-
-// Pexels api limits: 200/hour and 20,000/month
-// OWM api limits: 60/minute and 1,000,000/month
-
 /**
- * Makes http requests to the weather/photo APIs
+ * Makes http requests to the weather/photo APIs and manages caching of the results.
  *
  * Initialized by Hilt as a singleton so that the same instance is preserved throughout
  * the application life cycle.
  */
 @Singleton
 class WeatherRepository @Inject constructor() {
-    // Latitude and longitude of the current location
-    var latitude: Double = 0.0
-    var longitude: Double = 0.0
+    /**
+     * Latitude used in the previous forecast request.
+     */
+    var previousLatitude: Double = 0.0
 
-    // API Request objects
+    /**
+     * Longitude used in the previous forecast request.
+     */
+    var previousLongitude: Double = 0.0
+
+    /**
+     * Makes OpenWeatherMap API calls.
+     */
     private val weather = OpenWeatherMap(OPENWEATHERMAP_APIKEY)
+
+    /**
+     * Makes API calls to Pexels.
+     */
     private val pexels = Pexels(PEXELS_APIKEY)
 
-    // Access cached forecasts
+    /**
+     * Data Access Object for the forecast cache.
+     */
     private val forecastDao = MainApplication.database.forecastDao()
 
+    /**
+     * LiveData for the units used in OpenWeatherMap API calls.
+     */
     private val observableUnits = MutableLiveData<String>()
 
+    /**
+     * OpenWeatherMap API object's units, exposed for modification.
+     */
     var units: String
         get() = this.weather.units
         set(value) {
             this.weather.units = value
         }
 
-    // Separate data class for combining all requested resources
+    /**
+     * The resources fetched by [fetchWeatherAsync], combined into a single data class.
+     */
     data class WeatherPacket(
         val locationName: String,
         val weather: OpenWeatherMap.RootObject,
@@ -52,13 +69,26 @@ class WeatherRepository @Inject constructor() {
         val bitmap: Bitmap
     )
 
+    /**
+     * Used by [SettingsFragment] to announce a change in units configuration,
+     * triggering the observer callback for views observing [unitsChanged].
+     */
     fun informUnitsChanged() {
         observableUnits.postValue(units)
     }
 
+    /**
+     * Observable LiveData publishing changes to the configured units, allowing listening views to
+     * update their data with the new units.
+     */
     fun unitsChanged(): LiveData<String> = observableUnits
 
-    // Helper method get a Bitmap image for photo url
+    /**
+     * Helper method to get a [Bitmap] for image url
+     *
+     * @param url The image's URL.
+     * @return Bitmap constructed from the image.
+     */
     private fun bitMapFromUrl(url: String): Bitmap {
         val connection = URL(url).openConnection() as HttpURLConnection
         connection.connect()
@@ -67,17 +97,29 @@ class WeatherRepository @Inject constructor() {
         return bmp
     }
 
-    fun changeLocation(latitude: Double, longitude: Double) {
-        this.latitude = latitude
-        this.longitude = longitude
-    }
+    /**
+     * Checks whether a CachedForecast has expired or not,
+     * i.e. it's older than [FORECAST_CACHE_AGE_MILLIS]
+     */
+    private fun hasExpired(cached: CachedForecast) =
+        (System.currentTimeMillis() - cached.timeStamp) < FORECAST_CACHE_AGE_MILLIS
 
-    // Get weather for the current location, and a weather related background image
-    fun fetchWeatherAsync(lambda: (WeatherPacket?) -> Unit) {
-        // TODO: Check if the last request was same as current, and if enough time has passed
+    /**
+     * Get weather for the current location, and a weather related background image.
+     *
+     * @param latitude Latitude of the location.
+     * @param longitude longitude of the location.
+     * @param lambda Callback fired when the weather request has finished. Called with
+     * a [WeatherPacket] which is null if the request fails.
+     */
+    fun fetchWeatherAsync(latitude: Double, longitude: Double, lambda: (WeatherPacket?) -> Unit) {
+        // Set new values for previous coordinates regardless of whether the request succeeds or not
+        previousLatitude = latitude
+        previousLongitude = longitude
         thread {
+            // Check whether the cache contains a forecast with identical request parameters
             val cacheResult = forecastDao.get(latitude, longitude, units).getOrNull(0)
-            if (cacheResult != null && (System.currentTimeMillis() - cacheResult.timeStamp) < FORECAST_CACHE_AGE_MILLIS) {
+            if (cacheResult != null && !hasExpired(cacheResult)) {
                 Log.d("weatherDebug", "Using cached result")
                 val remaining =
                     (FORECAST_CACHE_AGE_MILLIS - (System.currentTimeMillis() - cacheResult.timeStamp)) / 60000.0
@@ -85,6 +127,8 @@ class WeatherRepository @Inject constructor() {
                     "weatherDebug",
                     "Cache time remaining: $remaining min"
                 )
+                // If a cached forecast exists and has not expired, use it instead of
+                // requesting a new one. Attempt to fetch the bitmap.
                 val packet = try {
                     val bitmap = bitMapFromUrl(cacheResult.photo.portrait)
                     WeatherPacket(
@@ -96,27 +140,28 @@ class WeatherRepository @Inject constructor() {
                 } catch (e: Exception) {
                     null
                 }
+                // Call the lambda argument with the cached packet
                 lambda(packet)
             } else {
-                // Send weather forecast to the lambda as a combined object, or null if a request fails
+                // If no cached forecast exists or it has expired, request a new one
                 val packet = try {
+                    // Get the forecast
                     val weatherResult = weather.fetchWeather(latitude, longitude)
                     // Choose a random background image from the weather condition's photo collection
                     val photoCollection =
                         weatherCodeToPhotoCollectionId(weatherResult.current.conditionCode)
-                    val photoResult = pexels.fetchCollectionMedia(photoCollection)
-                    val photo = photoResult.random()
+                    val photo = pexels.fetchCollectionMedia(photoCollection).random()
                     val bitmap = bitMapFromUrl(photo.portrait)
                     // Geocode the location's name
                     val name = weather.fetchLocationName(latitude, longitude)
-                    val timeStamp = System.currentTimeMillis()
+                    // Insert a copy of the request and its result into the cache
                     forecastDao.insertAll(
                         CachedForecast(
                             name,
                             latitude,
                             longitude,
                             units,
-                            timeStamp,
+                            System.currentTimeMillis(),
                             weatherResult,
                             photo
                         )
@@ -124,8 +169,10 @@ class WeatherRepository @Inject constructor() {
                     // 'packet' evaluates to this if everything succeeds
                     WeatherPacket(name, weatherResult, photo, bitmap)
                 } catch (e: Exception) {
+                    // 'packet' evaluates to null if exception is encountered
                     null
                 }
+                // Call the lambda argument with the fetched packet
                 lambda(packet)
             }
         }
