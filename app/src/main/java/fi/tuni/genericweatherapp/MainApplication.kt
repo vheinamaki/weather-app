@@ -16,7 +16,7 @@ class MainApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         // Location database for saved locations
-        database = Room.databaseBuilder(this, WeatherAppDatabase::class.java, "weather3-locations.db")
+        database = Room.databaseBuilder(this, WeatherAppDatabase::class.java, DB_NAME)
             .build()
         // Resources for UI strings etc
         res = resources

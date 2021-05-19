@@ -13,19 +13,6 @@ import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.thread
 
-// 1h cache for location requests
-private const val CACHE_AGE = 3600000L
-
-// Weather conditions with their associated photo collections on Pexels
-enum class WeatherType(val photoCollection: String) {
-    RAIN("hlfvh66"),
-    CLEAR("9ouwlqp"),
-    CLOUDS("9o3bjjb"),
-    STORM("bpoijxy"),
-    SNOW("2k6ae11"),
-    MIST("o7j0pjq")
-}
-
 // Weather and background image handling, caching
 
 // Pexels api limits: 200/hour and 20,000/month
@@ -44,8 +31,8 @@ class WeatherRepository @Inject constructor() {
     var longitude: Double = 0.0
 
     // API Request objects
-    private val weather = OpenWeatherMap(owmKey)
-    private val pexels = Pexels(pexelsKey)
+    private val weather = OpenWeatherMap(OPENWEATHERMAP_APIKEY)
+    private val pexels = Pexels(PEXELS_APIKEY)
 
     // Access cached forecasts
     private val forecastDao = MainApplication.database.forecastDao()
@@ -65,18 +52,6 @@ class WeatherRepository @Inject constructor() {
         val photo: Pexels.Photo,
         val bitmap: Bitmap
     )
-
-    // Maps OpenWeatherMap condition codes to different weather types
-    private fun getWeatherType(conditionCode: Int): WeatherType {
-        return when (conditionCode) {
-            in 200..299 -> WeatherType.STORM
-            in 300..599 -> WeatherType.RAIN
-            in 600..699 -> WeatherType.SNOW
-            in 700..799 -> WeatherType.MIST
-            in 801..899 -> WeatherType.CLOUDS
-            else -> WeatherType.CLEAR
-        }
-    }
 
     fun informUnitsChanged() {
         observableUnits.postValue(units)
@@ -103,10 +78,10 @@ class WeatherRepository @Inject constructor() {
         // TODO: Check if the last request was same as current, and if enough time has passed
         thread {
             val cacheResult = forecastDao.get(latitude, longitude, units).getOrNull(0)
-            if (cacheResult != null && (System.currentTimeMillis() - cacheResult.timeStamp) < CACHE_AGE) {
+            if (cacheResult != null && (System.currentTimeMillis() - cacheResult.timeStamp) < FORECAST_CACHE_AGE_MILLIS) {
                 Log.d("weatherDebug", "Using cached result")
                 val remaining =
-                    (CACHE_AGE - (System.currentTimeMillis() - cacheResult.timeStamp)) / 60000.0
+                    (FORECAST_CACHE_AGE_MILLIS - (System.currentTimeMillis() - cacheResult.timeStamp)) / 60000.0
                 Log.d(
                     "weatherDebug",
                     "Cache time remaining: $remaining min"
@@ -129,7 +104,7 @@ class WeatherRepository @Inject constructor() {
                     val weatherResult = weather.fetchWeather(latitude, longitude)
                     // Choose a random background image from the weather condition's photo collection
                     val photoCollection =
-                        getWeatherType(weatherResult.current.conditionCode).photoCollection
+                        weatherCodeToPhotoCollectionId(weatherResult.current.conditionCode)
                     val photoResult = pexels.fetchCollectionMedia(photoCollection)
                     val photo = photoResult.random()
                     val bitmap = bitMapFromUrl(photo.portrait)

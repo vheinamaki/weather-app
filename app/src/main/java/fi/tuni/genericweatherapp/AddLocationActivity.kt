@@ -83,7 +83,7 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         binding.noResultsTextView.isVisible = false
         binding.progressIndicator.spinner.show()
         thread {
-            val weather = OpenWeatherMap(owmKey)
+            val weather = OpenWeatherMap(OPENWEATHERMAP_APIKEY)
             val locations = try {
                 weather.fetchCoordinates(query)
             } catch (e: Exception) {

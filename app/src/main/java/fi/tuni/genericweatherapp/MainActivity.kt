@@ -111,7 +111,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
                     "showButtons",
                     bundleOf("retryButton" to true)
                 )
-                showAlert(R.string.request_error_title, R.string.request_error)
+                showAlert(this, R.string.request_error_title, R.string.request_error)
             }
         }
 
@@ -149,7 +149,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             } else {
                 // Request timed out
                 Log.d("weatherDebug", "Location request failed")
-                showAlert(R.string.location_unavailable_title, R.string.location_unavailable)
+                showAlert(this, R.string.location_unavailable_title, R.string.location_unavailable)
             }
         }
     }
@@ -165,16 +165,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         } else {
             askLocationPermission.launch(perm)
         }
-    }
-
-    private fun showAlert(titleRes: Int, descriptionRes: Int) {
-        AlertDialog.Builder(this)
-            .setTitle(titleRes)
-            .setMessage(descriptionRes)
-            .setNeutralButton("OK") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .show()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
