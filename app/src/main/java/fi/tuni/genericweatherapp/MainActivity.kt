@@ -152,8 +152,14 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             model.refreshForecast()
         }
 
-        // TODO: Move control to view model
-        requestLocalForecast()
+        // Listen for changes in coordinates, make a request for the location when they change
+        weatherRepo.liveCoordinates.observe(this) { coords ->
+            if (coords == null) {
+                requestLocalForecast()
+            } else {
+                model.requestForecast(coords.first, coords.second)
+            }
+        }
     }
 
     /**
@@ -211,8 +217,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             // + button clicked
             R.id.toolbarAddLocation -> {
-                // Start the location-adding activity and trigger the result callback when done
-                changeLocation.launch(Intent(this, AddLocationActivity::class.java))
+                // Start the location-adding activity
+                startActivity(Intent(this, AddLocationActivity::class.java))
                 return true
             }
         }
@@ -224,7 +230,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         when (item.itemId) {
             // 'Manage Locations' option
             R.id.navManageLocations -> {
-                changeLocation.launch(Intent(this, LocationsActivity::class.java))
+                startActivity(Intent(this, LocationsActivity::class.java))
             }
             // Settings option
             R.id.navSettings -> {
@@ -232,7 +238,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             }
             // 'Add Location' option
             R.id.navAddLocation -> {
-                changeLocation.launch(Intent(this, AddLocationActivity::class.java))
+                startActivity(Intent(this, AddLocationActivity::class.java))
             }
         }
         // Close the navigation drawer when an item was selected

@@ -82,7 +82,6 @@ class WeatherFragment : Fragment(R.layout.fragment_weather) {
             binding.linkTextView.text = data.photo.pageUrl
             binding.weatherImage.setImageResource(weatherIconToDrawableResource(data.weather.current.icon))
             // Set current weather temperature and description
-            // TODO: Move formatting to ViewModel
             val symbol = model.getUnitsSymbol()
             binding.tempTextView.text = "${data.weather.current.temp.roundToInt()}$symbol"
             // Capitalize the description

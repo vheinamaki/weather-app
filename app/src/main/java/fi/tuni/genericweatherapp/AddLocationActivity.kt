@@ -6,6 +6,7 @@ import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,6 +15,7 @@ import fi.tuni.genericweatherapp.adapters.LocationSearchAdapter
 import fi.tuni.genericweatherapp.data.DBLocation
 import fi.tuni.genericweatherapp.data.LocationRepository
 import fi.tuni.genericweatherapp.data.OpenWeatherMap
+import fi.tuni.genericweatherapp.data.WeatherRepository
 import fi.tuni.genericweatherapp.databinding.ActivityAddLocationBinding
 import javax.inject.Inject
 import kotlin.concurrent.thread
@@ -29,6 +31,12 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
      */
     @Inject
     lateinit var locationRepo: LocationRepository
+
+    /**
+     * WeatherRepository dependency, used to update coordinate data when a location is added.
+     */
+    @Inject
+    lateinit var weatherRepo: WeatherRepository
 
     /**
      * View binding for the activity.
@@ -65,13 +73,9 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         adapter.locationClickedListener = {
             // Add selected location to the database
             locationRepo.insertLocation(DBLocation(it))
-            // Also send location information back to the launching activity
-            // The result is used if the location was started from main activity, which will
-            // Then make a request to its ViewModel to change the location.
-            val returnIntent = Intent()
-            returnIntent.putExtra("latitude", it.lat)
-            returnIntent.putExtra("longitude", it.lon)
-            setResult(Activity.RESULT_OK, returnIntent)
+            // Also send location information to the WeatherRepository
+            // The MainActivity will then received the new value and make a location request for it.
+            weatherRepo.liveCoordinates.postValue(Pair(it.lat, it.lon))
             finish()
         }
 

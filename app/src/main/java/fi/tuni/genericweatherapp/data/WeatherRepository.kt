@@ -21,6 +21,12 @@ import kotlin.concurrent.thread
 @Singleton
 class WeatherRepository @Inject constructor() {
     /**
+     * Updates with coordinates that should be used for forecast requests.
+     * If null, a local forecast should be requested.
+     */
+    val liveCoordinates = MutableLiveData<Pair<Double, Double>?>()
+
+    /**
      * Latitude used in the previous forecast request.
      */
     var previousLatitude: Double = 0.0
@@ -102,7 +108,7 @@ class WeatherRepository @Inject constructor() {
      * i.e. it's older than [FORECAST_CACHE_AGE_MILLIS]
      */
     private fun hasExpired(cached: CachedForecast) =
-        (System.currentTimeMillis() - cached.timeStamp) < FORECAST_CACHE_AGE_MILLIS
+        (System.currentTimeMillis() - cached.timeStamp) >= FORECAST_CACHE_AGE_MILLIS
 
     /**
      * Get weather for the current location, and a weather related background image.
@@ -143,6 +149,7 @@ class WeatherRepository @Inject constructor() {
                 // Call the lambda argument with the cached packet
                 lambda(packet)
             } else {
+                Log.d("weatherDebug", "Making new request")
                 // If no cached forecast exists or it has expired, request a new one
                 val packet = try {
                     // Get the forecast

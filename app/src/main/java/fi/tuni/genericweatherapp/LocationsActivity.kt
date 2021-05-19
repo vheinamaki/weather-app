@@ -8,12 +8,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import androidx.activity.viewModels
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import fi.tuni.genericweatherapp.adapters.SavedLocationAdapter
 import fi.tuni.genericweatherapp.data.DBLocation
 import fi.tuni.genericweatherapp.data.LocationRepository
+import fi.tuni.genericweatherapp.data.WeatherRepository
 import fi.tuni.genericweatherapp.databinding.ActivityLocationsBinding
 import javax.inject.Inject
 
@@ -28,6 +30,12 @@ class LocationsActivity : AppCompatActivity() {
      */
     @Inject
     lateinit var locationRepo: LocationRepository
+
+    /**
+     * WeatherRepository dependency, used to update coordinate data when a location is selected.
+     */
+    @Inject
+    lateinit var weatherRepo: WeatherRepository
 
     /**
      * View binding for the activity.
@@ -49,9 +57,8 @@ class LocationsActivity : AppCompatActivity() {
      */
     private var currentLocationCallback = {
         // Set the default click listener, assuming that user's location hasn't been fetched yet
-        val returnIntent = Intent()
-        returnIntent.putExtra("requestLocal", true)
-        setResult(Activity.RESULT_OK, returnIntent)
+        // Send a null as coordinates, meaning that local coordinates should be requested
+        weatherRepo.liveCoordinates.postValue(null)
         finish()
     }
 
@@ -146,16 +153,13 @@ class LocationsActivity : AppCompatActivity() {
     }
 
     /**
-     * Finish the activity and send the specified coordinates back to the launching activity.
+     * Finish the activity and send the specified coordinates to the WeatherRepository.
      *
-     * @param latitude Latitude to send back with the intent.
-     * @param longitude longitude to send back with the intent.
+     * @param latitude Latitude to send to WeatherRepository.
+     * @param longitude longitude to send to WeatherRepository.
      */
     private fun finishWithCoordinates(latitude: Double, longitude: Double) {
-        val returnIntent = Intent()
-        returnIntent.putExtra("latitude", latitude)
-        returnIntent.putExtra("longitude", longitude)
-        setResult(Activity.RESULT_OK, returnIntent)
+        weatherRepo.liveCoordinates.postValue(Pair(latitude, longitude))
         finish()
     }
 

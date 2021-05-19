@@ -50,19 +50,20 @@ class WeatherViewModel @Inject constructor(
             }
         weatherRepo.units = usedUnits
 
-        // TODO: Get the last viewed location and request forecast for it, or for local coordinates
+        // Set initial live coordinate value to null, which makes MainActivity request a forecast
+        // for local coordinates.
+        weatherRepo.liveCoordinates.value = null
     }
 
     /**
      * LiveData which gets updated with forecasts as they are requested.
      */
     private val liveWeather = MutableLiveData<WeatherRepository.WeatherPacket>()
+
     /**
      * Exposes immutable version of [liveWeather] to observers.
      */
-    fun getWeather(): LiveData<WeatherRepository.WeatherPacket> {
-        return liveWeather
-    }
+    fun getWeather(): LiveData<WeatherRepository.WeatherPacket> = liveWeather
 
     /**
      * Updated with true and false when forecast fetching begins and ends.
