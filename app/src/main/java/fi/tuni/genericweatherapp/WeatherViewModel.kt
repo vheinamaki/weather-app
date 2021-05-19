@@ -29,9 +29,9 @@ class WeatherViewModel @Inject constructor(
 ) :
     AndroidViewModel(application) {
 
-    init {
-        val preferences = PreferenceManager.getDefaultSharedPreferences(getApplication())
+    private val preferences = PreferenceManager.getDefaultSharedPreferences(getApplication())
 
+    init {
         // Set weatherRepo's temperature units from preferences, or depending on the default locale
         // if the preference has not been set.
         val defaultUnits =
@@ -49,9 +49,19 @@ class WeatherViewModel @Inject constructor(
             }
         weatherRepo.units = usedUnits
 
-        // Set initial live coordinate value to null, which makes MainActivity request a forecast
-        // for local coordinates.
-        weatherRepo.liveCoordinates.value = null
+        // Set the initial live coordinate values.
+        val lastLatitude = preferences.getString("lastLatitude", null)?.toDoubleOrNull()
+        val lastLongitude = preferences.getString("lastLongitude", null)?.toDoubleOrNull()
+
+        if (lastLatitude != null && lastLongitude != null) {
+            // The last location the user selected is stored in preferences, use that one
+            // if it exists.
+            weatherRepo.liveCoordinates.value = Pair(lastLatitude, lastLongitude)
+        } else {
+            // Set initial live coordinate value to null, which makes MainActivity request a forecast
+            // for local coordinates.
+            weatherRepo.liveCoordinates.value = null
+        }
     }
 
     /**
@@ -104,6 +114,13 @@ class WeatherViewModel @Inject constructor(
             if (it != null) {
                 loadingError.postValue(false)
                 liveWeather.postValue(it)
+                // Set the location as the "last location" in preferences, which will cause it to
+                // be the one loaded next time the app is started.
+                preferences.edit().apply {
+                    putString("lastLatitude", latitude.toString())
+                    putString("lastLongitude", longitude.toString())
+                    apply()
+                }
                 // Optionally send the location to LocationRepository to cache it as the current location
                 if (currentLocation) {
                     locationRepo.setCurrentLocation(it.locationName, latitude, longitude)
