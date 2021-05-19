@@ -7,11 +7,13 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.MenuItem
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.Toolbar
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.adapters.LocationSearchAdapter
+import fi.tuni.genericweatherapp.data.DBLocation
+import fi.tuni.genericweatherapp.data.LocationRepository
+import fi.tuni.genericweatherapp.data.OpenWeatherMap
 import fi.tuni.genericweatherapp.databinding.ActivityAddLocationBinding
 import javax.inject.Inject
 import kotlin.concurrent.thread

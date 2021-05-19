@@ -1,14 +1,13 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.data
 
-import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import fi.tuni.genericweatherapp.*
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlin.concurrent.thread

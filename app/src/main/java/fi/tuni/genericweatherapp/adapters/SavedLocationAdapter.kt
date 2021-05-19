@@ -1,4 +1,4 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.adapters
 
 import android.view.View
 import android.widget.ImageButton
@@ -6,6 +6,8 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
+import fi.tuni.genericweatherapp.data.DBLocation
+import fi.tuni.genericweatherapp.R
 import java.util.*
 
 /**

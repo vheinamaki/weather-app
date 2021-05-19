@@ -1,17 +1,8 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.data
 
-import android.os.Parcel
-import android.os.Parcelable
-import android.util.Log
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.fasterxml.jackson.core.JsonParseException
-import com.fasterxml.jackson.databind.JsonMappingException
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import kotlinx.android.parcel.Parceler
-import kotlinx.android.parcel.Parcelize
-import kotlinx.android.parcel.TypeParceler
 import java.io.BufferedInputStream
 import java.net.HttpURLConnection
 import java.net.URL

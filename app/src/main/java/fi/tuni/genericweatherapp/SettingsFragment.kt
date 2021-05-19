@@ -4,8 +4,8 @@ import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import androidx.preference.PreferenceFragmentCompat
-import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.data.WeatherRepository
 import javax.inject.Inject
 
 @AndroidEntryPoint

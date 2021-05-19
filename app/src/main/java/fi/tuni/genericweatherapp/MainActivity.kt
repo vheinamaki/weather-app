@@ -2,14 +2,12 @@ package fi.tuni.genericweatherapp
 
 import android.Manifest
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -20,6 +18,7 @@ import androidx.fragment.app.commit
 import com.google.android.gms.location.*
 import com.google.android.material.navigation.NavigationView
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.data.WeatherRepository
 import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import javax.inject.Inject
 

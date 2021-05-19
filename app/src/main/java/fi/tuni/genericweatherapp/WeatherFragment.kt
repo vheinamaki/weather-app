@@ -7,10 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.core.graphics.drawable.toDrawable
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.recyclerview.widget.LinearLayoutManager
+import fi.tuni.genericweatherapp.adapters.HourlyWeatherAdapter
+import fi.tuni.genericweatherapp.data.OpenWeatherMap
 import fi.tuni.genericweatherapp.databinding.FragmentWeatherBinding
 import java.text.DateFormat
 import java.text.SimpleDateFormat

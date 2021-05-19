@@ -1,9 +1,12 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.adapters
 
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import fi.tuni.genericweatherapp.data.OpenWeatherMap
+import fi.tuni.genericweatherapp.R
+import fi.tuni.genericweatherapp.weatherIconToDrawableResource
 import java.text.DateFormat
 import kotlin.math.roundToInt
 

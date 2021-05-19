@@ -5,9 +5,10 @@ import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.lifecycle.HiltViewModel
+import fi.tuni.genericweatherapp.data.LocationRepository
+import fi.tuni.genericweatherapp.data.WeatherRepository
 import java.util.*
 import javax.inject.Inject
 

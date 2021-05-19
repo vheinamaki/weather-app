@@ -1,13 +1,9 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.adapters
 
-import android.app.Activity
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import java.text.DateFormat
 
 /**
  * Generic RecyclerView adapter for ArrayList

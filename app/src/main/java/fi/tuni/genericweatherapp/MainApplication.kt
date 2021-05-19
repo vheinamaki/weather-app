@@ -2,10 +2,9 @@ package fi.tuni.genericweatherapp
 
 import android.app.Application
 import android.content.res.Resources
-import android.location.Geocoder
 import androidx.room.Room
 import dagger.hilt.android.HiltAndroidApp
-import java.util.*
+import fi.tuni.genericweatherapp.data.WeatherAppDatabase
 
 // Global application state, used by Hilt for di service management.
 // Also used to store singleton objects that need to be initialized with a Context but are used in

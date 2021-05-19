@@ -1,7 +1,5 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.data
 
-import android.content.Context
-import android.graphics.Bitmap
 import androidx.lifecycle.LiveData
 import androidx.room.*
 import androidx.room.TypeConverters

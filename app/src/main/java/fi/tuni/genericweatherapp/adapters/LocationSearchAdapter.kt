@@ -1,10 +1,11 @@
-package fi.tuni.genericweatherapp
+package fi.tuni.genericweatherapp.adapters
 
 import android.view.View
-import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import fi.tuni.genericweatherapp.data.OpenWeatherMap
+import fi.tuni.genericweatherapp.R
 import java.util.*
 
 /**

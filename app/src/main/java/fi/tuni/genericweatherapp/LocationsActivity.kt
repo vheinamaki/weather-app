@@ -8,20 +8,14 @@ import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
-import androidx.core.view.GravityCompat
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.location.LocationServices
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import fi.tuni.genericweatherapp.adapters.SavedLocationAdapter
+import fi.tuni.genericweatherapp.data.DBLocation
+import fi.tuni.genericweatherapp.data.LocationRepository
 import fi.tuni.genericweatherapp.databinding.ActivityLocationsBinding
-import fi.tuni.genericweatherapp.databinding.ActivityMainBinding
 import javax.inject.Inject
-import kotlin.concurrent.thread
 
 /**
  * Lists the locations the user has saved to the database
