@@ -1,2 +1,3 @@
 /build
+/release
 src/main/java/fi/tuni/genericweatherapp/tempAPIKeys.kt
