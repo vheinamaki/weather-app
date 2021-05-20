@@ -9,6 +9,7 @@ import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.isVisible
+import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import fi.tuni.genericweatherapp.adapters.LocationSearchAdapter
@@ -67,6 +68,13 @@ class AddLocationActivity : AppCompatActivity(), SearchView.OnQueryTextListener 
         // Configure recyclerView for listing the search results
         val layoutManager = LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false)
         binding.recyclerView.layoutManager = layoutManager
+        // Add a divider between the list items
+        binding.recyclerView.addItemDecoration(
+            DividerItemDecoration(
+                this,
+                DividerItemDecoration.VERTICAL
+            )
+        )
         binding.recyclerView.adapter = adapter
 
         // Click listener for the search results

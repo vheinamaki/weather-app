@@ -26,7 +26,7 @@ const val PEXELS_APIKEY = keys.pexelsKey
 /**
  * Name of the database file.
  */
-const val DB_NAME = "weather3-locations.db"
+const val DB_NAME = "generic-weather-app.db"
 
 /**
  * Location request timeout; How long location requests should wait for a result before firing the

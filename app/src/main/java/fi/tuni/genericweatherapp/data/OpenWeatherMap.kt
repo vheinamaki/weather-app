@@ -159,7 +159,7 @@ class OpenWeatherMap(
     fun fetchCoordinates(locationName: String): Array<Location> {
         // Sanitize the input (replace spaces with +, etc)
         val sanitized = URLEncoder.encode(locationName, "UTF-8")
-        val url = URL("$apiUrl/geo/1.0/direct?q=$sanitized&appid=$apiKey")
+        val url = URL("$apiUrl/geo/1.0/direct?q=$sanitized&limit=15&appid=$apiKey")
         val urlConnection = url.openConnection() as HttpURLConnection
         urlConnection.connect()
         // API may send a 404 if the location name is invalid
