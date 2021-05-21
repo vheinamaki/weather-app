@@ -47,35 +47,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var binding: ActivityMainBinding
 
     /**
-     * Location-changing activity launcher, and callback that is fired when the launched activity
-     * returns a result.
-     *
-     * Used by LocationsActivity and AddLocationActivity to send back the selected location.
-     */
-    private val changeLocation =
-        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
-            // RESULT_OK is received if a location was selected in the started activity
-            if (it.resultCode == Activity.RESULT_OK) {
-                // Extract new location information from the bundle
-                val bundle = it.data?.extras
-                if (bundle != null) {
-                    // Request the ViewModel to update the current location
-                    // See if the request should be done with geolocation or not
-                    val localRequest = bundle.getBoolean("requestLocal", false)
-                    if (localRequest) {
-                        // Make a location request to request for geolocation
-                        requestLocalForecast()
-                    } else {
-                        // Otherwise make a request with the returned coordinates
-                        val lat = bundle.getDouble("latitude")
-                        val lon = bundle.getDouble("longitude")
-                        model.requestForecast(lat, lon)
-                    }
-                }
-            }
-        }
-
-    /**
      * Activity launcher for asking geolocation permission.
      */
     private val askLocationPermission = registerForActivityResult(
