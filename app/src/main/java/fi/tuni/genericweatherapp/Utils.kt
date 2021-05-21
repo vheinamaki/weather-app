@@ -44,21 +44,6 @@ const val GEOLOC_TIMEOUT_MILLIS = 15000L // 15 seconds
 const val FORECAST_CACHE_AGE_MILLIS = 3600000L // 1h
 
 /**
- * Weather conditions with their associated photo collections' IDs on Pexels.
- *
- * @property id The string ID of the Pexels photo collection. Available collections are specific
- * to the API key.
- */
-enum class PhotoCollection(val id: String) {
-    RAIN("hlfvh66"),
-    CLEAR("9ouwlqp"),
-    CLOUDS("9o3bjjb"),
-    STORM("bpoijxy"),
-    SNOW("2k6ae11"),
-    MIST("o7j0pjq")
-}
-
-/**
  * @return Whether or not the locale's country measures temperature in Fahrenheits.
  */
 fun Locale.usesFahrenheits() = this.country in fahrenheitUsers
@@ -76,6 +61,21 @@ private val fahrenheitUsers = listOf(
     "fm", // Micronesia
     "mh", // Marshall Islands
 )
+
+/**
+ * Weather conditions with their associated photo collections' IDs on Pexels.
+ *
+ * @property id The string ID of the Pexels photo collection. Available collections are specific
+ * to the API key.
+ */
+enum class PhotoCollection(val id: String) {
+    RAIN("hlfvh66"),
+    CLEAR("9ouwlqp"),
+    CLOUDS("9o3bjjb"),
+    STORM("bpoijxy"),
+    SNOW("2k6ae11"),
+    MIST("o7j0pjq")
+}
 
 /**
  * Maps OpenWeatherMap condition codes to photo collection IDs.
@@ -142,18 +142,20 @@ fun showAlert(context: Context, titleRes: Int, descriptionRes: Int) {
  * @param lambda Callback to fire when the location request finishes. Called with a [LocationResult]
  * object, which is null if the request fails.
  */
-@SuppressLint("MissingPermission")
+@SuppressLint("MissingPermission") // Permission is asked in MainActivity
 fun requestLocation(
     client: FusedLocationProviderClient,
     lambda: (result: LocationResult?) -> Unit
 ) {
     lateinit var timer: CountDownTimer
 
+    // Location request settings, request at 1 second intervals
     val request = LocationRequest.create()
     request.interval = 1000
     request.priority = LocationRequest.PRIORITY_HIGH_ACCURACY
     val callback = object : LocationCallback() {
         override fun onLocationResult(result: LocationResult) {
+            // Successful request, cancel the countdown, send results and remove the callback
             timer.cancel()
             lambda(result)
             client.removeLocationUpdates(this)
@@ -162,6 +164,7 @@ fun requestLocation(
         override fun onLocationAvailability(availability: LocationAvailability) {
             val available = availability.isLocationAvailable
             if (!available) {
+                // Callback reports that location is not available, cancel timeout, send null, etc
                 timer.cancel()
                 lambda(null)
                 client.removeLocationUpdates(this)
@@ -173,6 +176,7 @@ fun requestLocation(
         override fun onTick(p0: Long) {}
 
         override fun onFinish() {
+            // Timeout reached, location is probably not available, send null and remove callback
             lambda(null)
             client.removeLocationUpdates(callback)
         }
